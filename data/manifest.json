@@ -1,0 +1,24 @@
+{
+  "synthetic": true,
+  "config": {
+    "seed": 42,
+    "start_month": "2024-10-01",
+    "months": 24,
+    "reporting_cutoff": "2026-09-30",
+    "connection": "<your_connection>",
+    "expected_organization": "<YOUR_ORG>",
+    "expected_account": "<YOUR_ACCOUNT>",
+    "database": "REVENUE_PULSE_DB",
+    "schema": "DASHBOARD_DEMO",
+    "warehouse": "COMPUTE_WH",
+    "viewer_role": "DASHBOARD_DEMO_SALES_OPS",
+    "semantic_view": "REVENUE_SEMANTIC_VIEW",
+    "agent": "REVENUE_ADVISOR"
+  },
+  "row_count": 3888,
+  "sha256": {
+    "customers.csv": "00dd0ae20831f632944aeb61134c3528114de5b8ee5166796cc5db500c4cdc62",
+    "products.csv": "e9fd91ebaa37689f037c0e9278fa12ef78f3f27052894a7d70b3c643fd3c13eb",
+    "revenue_monthly.csv": "82e2e21a3edf52eccac7836d6e1e39d58f9c86af9a2ad144c9ecc4a0a5af247d"
+  }
+}

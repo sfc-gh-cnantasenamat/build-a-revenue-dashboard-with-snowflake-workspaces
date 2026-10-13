@@ -1,0 +1,935 @@
+{
+  "spec_version": 2,
+  "spec_revision": 4,
+  "version": 2,
+  "title": "Revenue Pulse",
+  "tabs": [
+    {
+      "order": 0,
+      "tab_id": "default",
+      "title": "Overview",
+      "tiles": [
+        {
+          "tile_id": "header",
+          "type": "text",
+          "text": "# Revenue Pulse\n**Synthetic demo data** for a fictional B2B software company, complete through **2026-09-30**. Source: semantic view `REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW`.\n\nNet revenue = gross revenue minus discounts and refunds. Attainment = net revenue / target. Year-over-year compares the same filtered months one year earlier. Default view: Q3 2026."
+        },
+        {
+          "tile_id": "kpi-net-revenue",
+          "title": "Net Revenue",
+          "type": "chart",
+          "spec": {
+            "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+            "data": {
+              "name": "values"
+            },
+            "usermeta": {
+              "snowflake": {
+                "chartType": "scorecard",
+                "scorecardConfig": {
+                  "format": "decimal",
+                  "decimals": 1,
+                  "abbreviate": true,
+                  "deltaColorMode": "increasesBetter",
+                  "comparisonMode": "manual",
+                  "comparisonEnabled": true,
+                  "prevColumn": "PRIOR_VALUE",
+                  "currentColumn": "CURRENT_VALUE",
+                  "displayFormat": "change",
+                  "sparklineEnabled": false,
+                  "labelEnabled": true,
+                  "labelField": "",
+                  "labelText": "USD, vs same period last year"
+                }
+              }
+            }
+          },
+          "datasources": [
+            "ds-kpi-net-revenue"
+          ]
+        },
+        {
+          "tile_id": "kpi-attainment",
+          "title": "Target Attainment",
+          "type": "chart",
+          "spec": {
+            "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+            "data": {
+              "name": "values"
+            },
+            "usermeta": {
+              "snowflake": {
+                "chartType": "scorecard",
+                "scorecardConfig": {
+                  "format": "decimal",
+                  "decimals": 1,
+                  "abbreviate": true,
+                  "deltaColorMode": "increasesBetter",
+                  "comparisonMode": "manual",
+                  "comparisonEnabled": true,
+                  "prevColumn": "PRIOR_VALUE",
+                  "currentColumn": "CURRENT_VALUE",
+                  "displayFormat": "change",
+                  "sparklineEnabled": false,
+                  "labelEnabled": true,
+                  "labelField": "",
+                  "labelText": "% of target, vs last year"
+                }
+              }
+            }
+          },
+          "datasources": [
+            "ds-kpi-attainment"
+          ]
+        },
+        {
+          "tile_id": "kpi-variance",
+          "title": "Variance to Target",
+          "type": "chart",
+          "spec": {
+            "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+            "data": {
+              "name": "values"
+            },
+            "usermeta": {
+              "snowflake": {
+                "chartType": "scorecard",
+                "scorecardConfig": {
+                  "format": "decimal",
+                  "decimals": 0,
+                  "abbreviate": true,
+                  "deltaColorMode": "increasesBetter",
+                  "comparisonMode": "manual",
+                  "comparisonEnabled": false,
+                  "prevColumn": "PRIOR_VALUE",
+                  "currentColumn": "CURRENT_VALUE",
+                  "displayFormat": "change",
+                  "sparklineEnabled": false,
+                  "labelEnabled": true,
+                  "labelField": "",
+                  "labelText": "USD, net revenue minus target"
+                }
+              }
+            }
+          },
+          "datasources": [
+            "ds-kpi-variance"
+          ]
+        },
+        {
+          "tile_id": "kpi-margin",
+          "title": "Gross Margin",
+          "type": "chart",
+          "spec": {
+            "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+            "data": {
+              "name": "values"
+            },
+            "usermeta": {
+              "snowflake": {
+                "chartType": "scorecard",
+                "scorecardConfig": {
+                  "format": "decimal",
+                  "decimals": 1,
+                  "abbreviate": true,
+                  "deltaColorMode": "increasesBetter",
+                  "comparisonMode": "manual",
+                  "comparisonEnabled": true,
+                  "prevColumn": "PRIOR_VALUE",
+                  "currentColumn": "CURRENT_VALUE",
+                  "displayFormat": "change",
+                  "sparklineEnabled": false,
+                  "labelEnabled": true,
+                  "labelField": "",
+                  "labelText": "% of net revenue, vs last year"
+                }
+              }
+            }
+          },
+          "datasources": [
+            "ds-kpi-margin"
+          ]
+        },
+        {
+          "tile_id": "trend",
+          "title": "Monthly Net Revenue vs Target (all 24 months)",
+          "type": "chart",
+          "spec": {
+            "transform": [
+              {
+                "fold": [
+                  "NET_REVENUE",
+                  "REVENUE_TARGET"
+                ],
+                "as": [
+                  "SERIES",
+                  "VALUE"
+                ]
+              },
+              {
+                "calculate": "datum.SERIES === 'NET_REVENUE' ? 'Net revenue' : 'Target'",
+                "as": "SERIES_LABEL"
+              }
+            ],
+            "mark": {
+              "type": "line",
+              "point": true,
+              "interpolate": "monotone"
+            },
+            "encoding": {
+              "x": {
+                "field": "MONTH",
+                "type": "temporal",
+                "title": "Month"
+              },
+              "y": {
+                "field": "VALUE",
+                "type": "quantitative",
+                "title": "USD",
+                "axis": {
+                  "format": "$,.2s"
+                }
+              },
+              "color": {
+                "field": "SERIES_LABEL",
+                "type": "nominal",
+                "title": null
+              },
+              "strokeDash": {
+                "field": "SERIES_LABEL",
+                "type": "nominal",
+                "legend": null
+              },
+              "tooltip": [
+                {
+                  "field": "MONTH",
+                  "type": "temporal",
+                  "format": "%b %Y"
+                },
+                {
+                  "field": "SERIES_LABEL",
+                  "title": "Series"
+                },
+                {
+                  "field": "VALUE",
+                  "type": "quantitative",
+                  "format": "$,.0f"
+                }
+              ]
+            }
+          },
+          "datasources": [
+            "ds-trend"
+          ]
+        },
+        {
+          "tile_id": "by-region",
+          "title": "Variance to Target by Region",
+          "type": "chart",
+          "spec": {
+            "mark": {
+              "type": "bar",
+              "cornerRadiusEnd": 3
+            },
+            "encoding": {
+              "y": {
+                "field": "REGION",
+                "type": "nominal",
+                "sort": "x",
+                "title": null
+              },
+              "x": {
+                "field": "VARIANCE",
+                "type": "quantitative",
+                "title": "USD vs target",
+                "axis": {
+                  "format": "$,.2s"
+                }
+              },
+              "color": {
+                "condition": {
+                  "test": "datum.VARIANCE < 0",
+                  "value": "#d3132f"
+                },
+                "value": "#0e9c73"
+              },
+              "tooltip": [
+                {
+                  "field": "REGION"
+                },
+                {
+                  "field": "NET_REVENUE",
+                  "type": "quantitative",
+                  "format": "$,.0f",
+                  "title": "Net revenue"
+                },
+                {
+                  "field": "REVENUE_TARGET",
+                  "type": "quantitative",
+                  "format": "$,.0f",
+                  "title": "Target"
+                },
+                {
+                  "field": "VARIANCE",
+                  "type": "quantitative",
+                  "format": "$,.0f",
+                  "title": "Variance"
+                },
+                {
+                  "field": "ATTAINMENT",
+                  "type": "quantitative",
+                  "format": ".1%",
+                  "title": "Attainment"
+                }
+              ]
+            }
+          },
+          "datasources": [
+            "ds-by-region"
+          ]
+        },
+        {
+          "tile_id": "heatmap",
+          "title": "Target Attainment: Region x Segment",
+          "type": "chart",
+          "spec": {
+            "layer": [
+              {
+                "mark": {
+                  "type": "rect",
+                  "stroke": "white",
+                  "strokeWidth": 2
+                },
+                "encoding": {
+                  "color": {
+                    "field": "ATTAINMENT",
+                    "type": "quantitative",
+                    "title": "Attainment",
+                    "scale": {
+                      "domain": [
+                        0.5,
+                        1,
+                        1.1
+                      ],
+                      "range": [
+                        "#d3132f",
+                        "#f5f5f5",
+                        "#0e9c73"
+                      ]
+                    },
+                    "legend": {
+                      "format": ".0%"
+                    }
+                  }
+                }
+              },
+              {
+                "mark": {
+                  "type": "text",
+                  "fontWeight": "bold"
+                },
+                "encoding": {
+                  "text": {
+                    "field": "ATTAINMENT",
+                    "type": "quantitative",
+                    "format": ".0%"
+                  }
+                }
+              }
+            ],
+            "encoding": {
+              "x": {
+                "field": "SEGMENT",
+                "type": "nominal",
+                "title": null,
+                "sort": [
+                  "Enterprise",
+                  "Mid-market",
+                  "SMB"
+                ]
+              },
+              "y": {
+                "field": "REGION",
+                "type": "nominal",
+                "title": null
+              },
+              "tooltip": [
+                {
+                  "field": "REGION"
+                },
+                {
+                  "field": "SEGMENT"
+                },
+                {
+                  "field": "ATTAINMENT",
+                  "type": "quantitative",
+                  "format": ".1%"
+                },
+                {
+                  "field": "VARIANCE",
+                  "type": "quantitative",
+                  "format": "$,.0f"
+                }
+              ]
+            }
+          },
+          "datasources": [
+            "ds-heatmap"
+          ]
+        },
+        {
+          "tile_id": "drivers",
+          "title": "What Sales Ops Recorded: Variance by Driver",
+          "type": "chart",
+          "spec": {
+            "transform": [
+              {
+                "calculate": "replace(replace(datum.RECORDED_DRIVER, 'RECORDED_', ''), /_/g, ' ')",
+                "as": "DRIVER"
+              }
+            ],
+            "mark": {
+              "type": "bar",
+              "cornerRadiusEnd": 3
+            },
+            "encoding": {
+              "y": {
+                "field": "DRIVER",
+                "type": "nominal",
+                "sort": "x",
+                "title": null
+              },
+              "x": {
+                "field": "VARIANCE",
+                "type": "quantitative",
+                "title": "USD vs target",
+                "axis": {
+                  "format": "$,.2s"
+                }
+              },
+              "color": {
+                "condition": {
+                  "test": "datum.VARIANCE < 0",
+                  "value": "#d3132f"
+                },
+                "value": "#0e9c73"
+              },
+              "tooltip": [
+                {
+                  "field": "DRIVER"
+                },
+                {
+                  "field": "VARIANCE",
+                  "type": "quantitative",
+                  "format": "$,.0f"
+                },
+                {
+                  "field": "DISCOUNTS",
+                  "type": "quantitative",
+                  "format": "$,.0f"
+                },
+                {
+                  "field": "REFUNDS",
+                  "type": "quantitative",
+                  "format": "$,.0f"
+                },
+                {
+                  "field": "ACCOUNTS",
+                  "type": "quantitative",
+                  "title": "Accounts"
+                }
+              ]
+            }
+          },
+          "datasources": [
+            "ds-drivers"
+          ]
+        },
+        {
+          "tile_id": "ask",
+          "type": "text",
+          "text": "### Ask Revenue Advisor\nUse the chat box below this dashboard. Try:\n- *Why is EMEA Enterprise behind target in Q3 2026? Quantify the drivers.*\n- *Which accounts contributed most to the Q3 shortfall?*\n- *Will the renewal-delayed revenue recover in Q4?*\n- *How much of the gap is associated with discounts and refunds?*\n\nDrivers come from the `RECORDED_DRIVER` field logged by sales ops. They are recorded reasons, not inferred causes."
+        },
+        {
+          "tile_id": "accounts",
+          "title": "Account Detail (sorted by variance)",
+          "type": "table",
+          "spec": {
+            "columns": [
+              {
+                "field": "CUSTOMER_NAME",
+                "label": "Account"
+              },
+              {
+                "field": "REGION",
+                "label": "Region"
+              },
+              {
+                "field": "SEGMENT",
+                "label": "Segment"
+              },
+              {
+                "field": "NET_REVENUE",
+                "label": "Net revenue (USD)"
+              },
+              {
+                "field": "REVENUE_TARGET",
+                "label": "Target (USD)"
+              },
+              {
+                "field": "VARIANCE",
+                "label": "Variance (USD)"
+              },
+              {
+                "field": "ATTAINMENT_PCT",
+                "label": "Attainment %"
+              },
+              {
+                "field": "GROSS_MARGIN_PCT",
+                "label": "Gross margin %"
+              },
+              {
+                "field": "TOP_DRIVER",
+                "label": "Recorded driver"
+              }
+            ]
+          },
+          "datasources": [
+            "ds-accounts"
+          ]
+        }
+      ]
+    }
+  ],
+  "filters": {
+    "MONTH": {
+      "label": "Period",
+      "mode": "range",
+      "valueType": "DATE",
+      "default_values": [
+        "2026-07-01",
+        "2026-09-01"
+      ]
+    },
+    "REGION": {
+      "label": "Region",
+      "mode": "multi_select",
+      "valueType": "STRING",
+      "options": {
+        "source": "column",
+        "table": "REVENUE_PULSE_DB.DASHBOARD_DEMO.CUSTOMERS",
+        "column": "REGION"
+      }
+    },
+    "SEGMENT": {
+      "label": "Segment",
+      "mode": "multi_select",
+      "valueType": "STRING",
+      "options": {
+        "source": "column",
+        "table": "REVENUE_PULSE_DB.DASHBOARD_DEMO.CUSTOMERS",
+        "column": "SEGMENT"
+      }
+    },
+    "PRODUCT_NAME": {
+      "label": "Product",
+      "mode": "multi_select",
+      "valueType": "STRING",
+      "options": {
+        "source": "column",
+        "table": "REVENUE_PULSE_DB.DASHBOARD_DEMO.PRODUCTS",
+        "column": "PRODUCT_NAME"
+      }
+    }
+  },
+  "layout": {
+    "default": {
+      "meta": {
+        "default": true
+      },
+      "positions": {
+        "header": {
+          "x": 0,
+          "y": 0,
+          "w": 12,
+          "h": 2
+        },
+        "kpi-net-revenue": {
+          "x": 0,
+          "y": 2,
+          "w": 3,
+          "h": 2
+        },
+        "kpi-attainment": {
+          "x": 3,
+          "y": 2,
+          "w": 3,
+          "h": 2
+        },
+        "kpi-variance": {
+          "x": 6,
+          "y": 2,
+          "w": 3,
+          "h": 2
+        },
+        "kpi-margin": {
+          "x": 9,
+          "y": 2,
+          "w": 3,
+          "h": 2
+        },
+        "trend": {
+          "x": 0,
+          "y": 4,
+          "w": 12,
+          "h": 4
+        },
+        "by-region": {
+          "x": 0,
+          "y": 8,
+          "w": 6,
+          "h": 4
+        },
+        "heatmap": {
+          "x": 6,
+          "y": 8,
+          "w": 6,
+          "h": 4
+        },
+        "drivers": {
+          "x": 0,
+          "y": 12,
+          "w": 6,
+          "h": 4
+        },
+        "ask": {
+          "x": 6,
+          "y": 12,
+          "w": 6,
+          "h": 4
+        },
+        "accounts": {
+          "x": 0,
+          "y": 16,
+          "w": 12,
+          "h": 6
+        }
+      }
+    }
+  },
+  "datasources": {
+    "ds-kpi-net-revenue": {
+      "type": "sql",
+      "columns": [
+        {
+          "name": "CURRENT_VALUE",
+          "type": "NUMBER"
+        },
+        {
+          "name": "PRIOR_VALUE",
+          "type": "NUMBER"
+        }
+      ],
+      "sql": "WITH cur AS (\n    SELECT SUM(NET_REVENUE) AS NET, SUM(REVENUE_TARGET) AS TGT, SUM(GROSS_PROFIT) AS GP FROM (SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds))\n    WHERE {{ filter('MONTH') }}\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n),\npy AS (\n    SELECT SUM(NET_REVENUE) AS NET, SUM(REVENUE_TARGET) AS TGT, SUM(GROSS_PROFIT) AS GP FROM (SELECT DATEADD(YEAR, 1, MONTH) AS MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds))\n    WHERE {{ filter('MONTH') }}\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n)\nSELECT cur.NET AS CURRENT_VALUE, py.NET AS PRIOR_VALUE\nFROM cur CROSS JOIN py",
+      "filter_bindings": [
+        {
+          "filter_id": "MONTH"
+        },
+        {
+          "filter_id": "REGION"
+        },
+        {
+          "filter_id": "SEGMENT"
+        },
+        {
+          "filter_id": "PRODUCT_NAME"
+        }
+      ]
+    },
+    "ds-kpi-attainment": {
+      "type": "sql",
+      "columns": [
+        {
+          "name": "CURRENT_VALUE",
+          "type": "NUMBER"
+        },
+        {
+          "name": "PRIOR_VALUE",
+          "type": "NUMBER"
+        }
+      ],
+      "sql": "WITH cur AS (\n    SELECT SUM(NET_REVENUE) AS NET, SUM(REVENUE_TARGET) AS TGT, SUM(GROSS_PROFIT) AS GP FROM (SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds))\n    WHERE {{ filter('MONTH') }}\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n),\npy AS (\n    SELECT SUM(NET_REVENUE) AS NET, SUM(REVENUE_TARGET) AS TGT, SUM(GROSS_PROFIT) AS GP FROM (SELECT DATEADD(YEAR, 1, MONTH) AS MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds))\n    WHERE {{ filter('MONTH') }}\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n)\nSELECT 100 * DIV0NULL(cur.NET, cur.TGT) AS CURRENT_VALUE, 100 * DIV0NULL(py.NET, py.TGT) AS PRIOR_VALUE\nFROM cur CROSS JOIN py",
+      "filter_bindings": [
+        {
+          "filter_id": "MONTH"
+        },
+        {
+          "filter_id": "REGION"
+        },
+        {
+          "filter_id": "SEGMENT"
+        },
+        {
+          "filter_id": "PRODUCT_NAME"
+        }
+      ]
+    },
+    "ds-kpi-variance": {
+      "type": "sql",
+      "columns": [
+        {
+          "name": "CURRENT_VALUE",
+          "type": "NUMBER"
+        },
+        {
+          "name": "PRIOR_VALUE",
+          "type": "NUMBER"
+        }
+      ],
+      "sql": "WITH cur AS (\n    SELECT SUM(NET_REVENUE) AS NET, SUM(REVENUE_TARGET) AS TGT, SUM(GROSS_PROFIT) AS GP FROM (SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds))\n    WHERE {{ filter('MONTH') }}\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n),\npy AS (\n    SELECT SUM(NET_REVENUE) AS NET, SUM(REVENUE_TARGET) AS TGT, SUM(GROSS_PROFIT) AS GP FROM (SELECT DATEADD(YEAR, 1, MONTH) AS MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds))\n    WHERE {{ filter('MONTH') }}\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n)\nSELECT cur.NET - cur.TGT AS CURRENT_VALUE, py.NET - py.TGT AS PRIOR_VALUE\nFROM cur CROSS JOIN py",
+      "filter_bindings": [
+        {
+          "filter_id": "MONTH"
+        },
+        {
+          "filter_id": "REGION"
+        },
+        {
+          "filter_id": "SEGMENT"
+        },
+        {
+          "filter_id": "PRODUCT_NAME"
+        }
+      ]
+    },
+    "ds-kpi-margin": {
+      "type": "sql",
+      "columns": [
+        {
+          "name": "CURRENT_VALUE",
+          "type": "NUMBER"
+        },
+        {
+          "name": "PRIOR_VALUE",
+          "type": "NUMBER"
+        }
+      ],
+      "sql": "WITH cur AS (\n    SELECT SUM(NET_REVENUE) AS NET, SUM(REVENUE_TARGET) AS TGT, SUM(GROSS_PROFIT) AS GP FROM (SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds))\n    WHERE {{ filter('MONTH') }}\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n),\npy AS (\n    SELECT SUM(NET_REVENUE) AS NET, SUM(REVENUE_TARGET) AS TGT, SUM(GROSS_PROFIT) AS GP FROM (SELECT DATEADD(YEAR, 1, MONTH) AS MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds))\n    WHERE {{ filter('MONTH') }}\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n)\nSELECT 100 * DIV0NULL(cur.GP, cur.NET) AS CURRENT_VALUE, 100 * DIV0NULL(py.GP, py.NET) AS PRIOR_VALUE\nFROM cur CROSS JOIN py",
+      "filter_bindings": [
+        {
+          "filter_id": "MONTH"
+        },
+        {
+          "filter_id": "REGION"
+        },
+        {
+          "filter_id": "SEGMENT"
+        },
+        {
+          "filter_id": "PRODUCT_NAME"
+        }
+      ]
+    },
+    "ds-trend": {
+      "type": "sql",
+      "columns": [
+        {
+          "name": "MONTH",
+          "type": "DATE"
+        },
+        {
+          "name": "NET_REVENUE",
+          "type": "NUMBER"
+        },
+        {
+          "name": "REVENUE_TARGET",
+          "type": "NUMBER"
+        }
+      ],
+      "sql": "SELECT MONTH, SUM(NET_REVENUE) AS NET_REVENUE, SUM(REVENUE_TARGET) AS REVENUE_TARGET\nFROM (SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds))\nWHERE {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\nGROUP BY MONTH\nORDER BY MONTH",
+      "filter_bindings": [
+        {
+          "filter_id": "REGION"
+        },
+        {
+          "filter_id": "SEGMENT"
+        },
+        {
+          "filter_id": "PRODUCT_NAME"
+        }
+      ]
+    },
+    "ds-by-region": {
+      "type": "sql",
+      "columns": [
+        {
+          "name": "REGION",
+          "type": "VARCHAR"
+        },
+        {
+          "name": "NET_REVENUE",
+          "type": "NUMBER"
+        },
+        {
+          "name": "REVENUE_TARGET",
+          "type": "NUMBER"
+        },
+        {
+          "name": "VARIANCE",
+          "type": "NUMBER"
+        },
+        {
+          "name": "ATTAINMENT",
+          "type": "NUMBER"
+        }
+      ],
+      "sql": "SELECT REGION, SUM(NET_REVENUE) AS NET_REVENUE, SUM(REVENUE_TARGET) AS REVENUE_TARGET,\n    SUM(NET_REVENUE) - SUM(REVENUE_TARGET) AS VARIANCE,\n    DIV0NULL(SUM(NET_REVENUE), SUM(REVENUE_TARGET)) AS ATTAINMENT\nFROM (SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds))\nWHERE {{ filter('MONTH') }}\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\nGROUP BY REGION\nORDER BY VARIANCE",
+      "filter_bindings": [
+        {
+          "filter_id": "MONTH"
+        },
+        {
+          "filter_id": "REGION"
+        },
+        {
+          "filter_id": "SEGMENT"
+        },
+        {
+          "filter_id": "PRODUCT_NAME"
+        }
+      ]
+    },
+    "ds-heatmap": {
+      "type": "sql",
+      "columns": [
+        {
+          "name": "REGION",
+          "type": "VARCHAR"
+        },
+        {
+          "name": "SEGMENT",
+          "type": "VARCHAR"
+        },
+        {
+          "name": "ATTAINMENT",
+          "type": "NUMBER"
+        },
+        {
+          "name": "VARIANCE",
+          "type": "NUMBER"
+        }
+      ],
+      "sql": "SELECT REGION, SEGMENT, DIV0NULL(SUM(NET_REVENUE), SUM(REVENUE_TARGET)) AS ATTAINMENT,\n    SUM(NET_REVENUE) - SUM(REVENUE_TARGET) AS VARIANCE\nFROM (SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds))\nWHERE {{ filter('MONTH') }}\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\nGROUP BY REGION, SEGMENT",
+      "filter_bindings": [
+        {
+          "filter_id": "MONTH"
+        },
+        {
+          "filter_id": "REGION"
+        },
+        {
+          "filter_id": "SEGMENT"
+        },
+        {
+          "filter_id": "PRODUCT_NAME"
+        }
+      ]
+    },
+    "ds-drivers": {
+      "type": "sql",
+      "columns": [
+        {
+          "name": "RECORDED_DRIVER",
+          "type": "VARCHAR"
+        },
+        {
+          "name": "VARIANCE",
+          "type": "NUMBER"
+        },
+        {
+          "name": "DISCOUNTS",
+          "type": "NUMBER"
+        },
+        {
+          "name": "REFUNDS",
+          "type": "NUMBER"
+        },
+        {
+          "name": "ACCOUNTS",
+          "type": "NUMBER"
+        }
+      ],
+      "sql": "SELECT RECORDED_DRIVER, SUM(NET_REVENUE) - SUM(REVENUE_TARGET) AS VARIANCE,\n    SUM(TOTAL_DISCOUNTS) AS DISCOUNTS, SUM(TOTAL_REFUNDS) AS REFUNDS, COUNT(DISTINCT CUSTOMER_NAME) AS ACCOUNTS\nFROM (SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name, revenue.recorded_driver, customers.customer_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds))\nWHERE {{ filter('MONTH') }}\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\nGROUP BY RECORDED_DRIVER\nORDER BY VARIANCE",
+      "filter_bindings": [
+        {
+          "filter_id": "MONTH"
+        },
+        {
+          "filter_id": "REGION"
+        },
+        {
+          "filter_id": "SEGMENT"
+        },
+        {
+          "filter_id": "PRODUCT_NAME"
+        }
+      ]
+    },
+    "ds-accounts": {
+      "type": "sql",
+      "columns": [
+        {
+          "name": "CUSTOMER_NAME",
+          "type": "VARCHAR"
+        },
+        {
+          "name": "REGION",
+          "type": "VARCHAR"
+        },
+        {
+          "name": "SEGMENT",
+          "type": "VARCHAR"
+        },
+        {
+          "name": "NET_REVENUE",
+          "type": "NUMBER"
+        },
+        {
+          "name": "REVENUE_TARGET",
+          "type": "NUMBER"
+        },
+        {
+          "name": "VARIANCE",
+          "type": "NUMBER"
+        },
+        {
+          "name": "ATTAINMENT_PCT",
+          "type": "NUMBER"
+        },
+        {
+          "name": "GROSS_MARGIN_PCT",
+          "type": "NUMBER"
+        },
+        {
+          "name": "TOP_DRIVER",
+          "type": "VARCHAR"
+        }
+      ],
+      "sql": "SELECT CUSTOMER_NAME, REGION, SEGMENT, ROUND(SUM(NET_REVENUE), 0) AS NET_REVENUE,\n    ROUND(SUM(REVENUE_TARGET), 0) AS REVENUE_TARGET,\n    ROUND(SUM(NET_REVENUE) - SUM(REVENUE_TARGET), 0) AS VARIANCE,\n    ROUND(100 * DIV0NULL(SUM(NET_REVENUE), SUM(REVENUE_TARGET)), 1) AS ATTAINMENT_PCT,\n    ROUND(100 * DIV0NULL(SUM(GROSS_PROFIT), SUM(NET_REVENUE)), 1) AS GROSS_MARGIN_PCT,\n    MAX_BY(RECORDED_DRIVER, ABS(REVENUE_TARGET - NET_REVENUE)) AS TOP_DRIVER\nFROM (SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name, revenue.recorded_driver, customers.customer_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds))\nWHERE {{ filter('MONTH') }}\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\nGROUP BY CUSTOMER_NAME, REGION, SEGMENT\nORDER BY VARIANCE\nLIMIT 100",
+      "filter_bindings": [
+        {
+          "filter_id": "MONTH"
+        },
+        {
+          "filter_id": "REGION"
+        },
+        {
+          "filter_id": "SEGMENT"
+        },
+        {
+          "filter_id": "PRODUCT_NAME"
+        }
+      ]
+    }
+  }
+}

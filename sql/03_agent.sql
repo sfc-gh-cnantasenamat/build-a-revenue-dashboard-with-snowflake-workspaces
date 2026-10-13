@@ -1,3 +1,8 @@
+-- Revenue Advisor agent used by CoWork follow-up questions. Run after sql/02_semantic_view.sql.
+CREATE OR REPLACE AGENT REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_ADVISOR
+  COMMENT = 'Revenue Pulse guide agent (synthetic data)'
+  FROM SPECIFICATION
+$$
 models:
   orchestration: auto
 instructions:
@@ -21,3 +26,5 @@ tool_resources:
       type: warehouse
       warehouse: COMPUTE_WH
     semantic_view: REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW
+
+$$;

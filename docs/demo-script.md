@@ -10,7 +10,7 @@ Show `REVENUE_SEMANTIC_VIEW` in the catalog briefly: metrics like net revenue, t
 
 ## 2. The dashboard in Workspaces (90 s)
 
-Open `revenue_pulse/revenue_pulse.dash`.
+Open `dashboards/revenue_pulse.dash` in the Git-synced workspace.
 
 - The KPI row reads: net revenue **$7.4M**, up 7.9% on last year, but attainment is only **92.4%**, which is **$603.6K behind target**.
 - Trend: revenue tracked target for 21 months, then fell below it in July.
