@@ -1,0 +1,7 @@
+version: 1
+artifacts:
+  - path: REVENUE_ADVISOR.agent.yaml
+    type: cortex_agent
+    targets:
+      default:
+        object: REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_ADVISOR

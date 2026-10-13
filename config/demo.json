@@ -1,0 +1,15 @@
+{
+  "seed": 42,
+  "start_month": "2024-10-01",
+  "months": 24,
+  "reporting_cutoff": "2026-09-30",
+  "connection": "<your_connection>",
+  "expected_organization": "<YOUR_ORG>",
+  "expected_account": "<YOUR_ACCOUNT>",
+  "database": "REVENUE_PULSE_DB",
+  "schema": "DASHBOARD_DEMO",
+  "warehouse": "COMPUTE_WH",
+  "viewer_role": "DASHBOARD_DEMO_SALES_OPS",
+  "semantic_view": "REVENUE_SEMANTIC_VIEW",
+  "agent": "REVENUE_ADVISOR"
+}
