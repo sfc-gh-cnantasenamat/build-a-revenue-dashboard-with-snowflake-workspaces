@@ -17,7 +17,7 @@ EXECUTE IMMEDIATE FROM @REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_PULSE_REPO/branc
 EXECUTE IMMEDIATE FROM @REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_PULSE_REPO/branches/main/sql/04_viewer_role.sql;
 ```
 
-4. In **Workspaces**, select **From Git repository**, paste this repo's URL, choose the `REVENUE_PULSE_GIT_API` integration and **Public repository**, then open `dashboards/revenue_pulse.dash`.
+4. In **Workspaces**, select **+ > Git workspace**, paste this repo's URL, choose the `REVENUE_PULSE_GIT_API` integration (the dialog may preselect another one) and **Public repository**, then open `dashboards/revenue_pulse.dash` and set its warehouse to `COMPUTE_WH`.
 5. Choose **Share > Publish as artifact** with the `DASHBOARD_DEMO_SALES_OPS` role. See the guide for the full walkthrough.
 
 If your warehouse isn't `COMPUTE_WH`, replace it in `sql/03_agent.sql` and `sql/04_viewer_role.sql` in your own copy of the files before running them.
@@ -40,4 +40,4 @@ Maintainer only (not needed to follow the guide): `scripts/generate_data.py` and
 
 ## Clean up
 
-Remove every role from the dashboard's **Share** dialog, delete the artifact in CoWork, and delete the Git-synced workspace. Then run `sql/99_cleanup.sql`, which drops `REVENUE_PULSE_DB`, the viewer role, and the API integration.
+Remove every role from the dashboard's **Share** dialog, delete the artifact in CoWork, and delete the Git workspace (**...** next to its name > **Delete**). Then run `sql/99_cleanup.sql`, which drops `REVENUE_PULSE_DB`, the viewer role, and the API integration.
