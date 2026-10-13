@@ -12,8 +12,8 @@ Edit `config/demo.json`: set `connection`, `expected_organization`, `expected_ac
 python3 scripts/generate_data.py
 python3 -m unittest discover -s tests -v
 python3 scripts/deploy.py
-cd cortex_project && cortex agent-studio agent-deploy --file-path REVENUE_ADVISOR.agent.yaml \
-  --fqn REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_ADVISOR --connection <your_connection> && cd ..
+cortex agent-studio agent-deploy --file-path REVENUE_ADVISOR.agent.yaml \
+  --fqn REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_ADVISOR --connection <your_connection>
 python3 scripts/build_dashboard.py
 python3 tests/check_dashboard_sql.py
 cortex ws cp dashboards/revenue_pulse.dash 'USER$.PUBLIC.DEFAULT$:/revenue_pulse/' --connection <your_connection>
