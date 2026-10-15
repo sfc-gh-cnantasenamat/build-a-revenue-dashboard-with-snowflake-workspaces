@@ -1,6 +1,6 @@
 {
   "spec_version": 2,
-  "spec_revision": 4,
+  "spec_revision": 5,
   "version": 2,
   "title": "Revenue Pulse",
   "tabs": [
@@ -193,7 +193,17 @@
               "color": {
                 "field": "SERIES_LABEL",
                 "type": "nominal",
-                "title": null
+                "title": null,
+                "scale": {
+                  "domain": [
+                    "Net revenue",
+                    "Target"
+                  ],
+                  "range": [
+                    "#2563a8",
+                    "#8a9bb0"
+                  ]
+                }
               },
               "strokeDash": {
                 "field": "SERIES_LABEL",
@@ -249,9 +259,9 @@
               "color": {
                 "condition": {
                   "test": "datum.VARIANCE < 0",
-                  "value": "#d3132f"
+                  "value": "#d97a2b"
                 },
-                "value": "#0e9c73"
+                "value": "#2563a8"
               },
               "tooltip": [
                 {
@@ -307,18 +317,22 @@
                     "title": "Attainment",
                     "scale": {
                       "domain": [
-                        0.5,
+                        0.55,
                         1,
-                        1.1
+                        1.02,
+                        1.035
                       ],
                       "range": [
-                        "#d3132f",
-                        "#f5f5f5",
-                        "#0e9c73"
-                      ]
+                        "#d97a2b",
+                        "#eaf1f8",
+                        "#7fb2e5",
+                        "#14365d"
+                      ],
+                      "clamp": true,
+                      "interpolate": "rgb"
                     },
                     "legend": {
-                      "format": ".0%"
+                      "format": ".1%"
                     }
                   }
                 }
@@ -332,7 +346,14 @@
                   "text": {
                     "field": "ATTAINMENT",
                     "type": "quantitative",
-                    "format": ".0%"
+                    "format": ".1%"
+                  },
+                  "color": {
+                    "condition": {
+                      "test": "datum.ATTAINMENT >= 1.027 || datum.ATTAINMENT < 0.7",
+                      "value": "white"
+                    },
+                    "value": "#14365d"
                   }
                 }
               }
@@ -346,7 +367,10 @@
                   "Enterprise",
                   "Mid-market",
                   "SMB"
-                ]
+                ],
+                "axis": {
+                  "labelAngle": 0
+                }
               },
               "y": {
                 "field": "REGION",
@@ -410,9 +434,9 @@
               "color": {
                 "condition": {
                   "test": "datum.VARIANCE < 0",
-                  "value": "#d3132f"
+                  "value": "#d97a2b"
                 },
-                "value": "#0e9c73"
+                "value": "#2563a8"
               },
               "tooltip": [
                 {
@@ -443,6 +467,227 @@
           },
           "datasources": [
             "ds-drivers"
+          ]
+        },
+        {
+          "tile_id": "waterfall",
+          "title": "Variance Bridge: How Each Recorded Driver Moves Us vs Target",
+          "type": "chart",
+          "spec": {
+            "layer": [
+              {
+                "mark": {
+                  "type": "bar",
+                  "cornerRadius": 2
+                },
+                "encoding": {
+                  "y": {
+                    "field": "START_VALUE",
+                    "type": "quantitative",
+                    "title": "USD vs target",
+                    "axis": {
+                      "format": "$,.2s"
+                    }
+                  },
+                  "y2": {
+                    "field": "END_VALUE"
+                  },
+                  "color": {
+                    "field": "KIND",
+                    "type": "nominal",
+                    "title": null,
+                    "scale": {
+                      "domain": [
+                        "Increase",
+                        "Decrease",
+                        "Total"
+                      ],
+                      "range": [
+                        "#7fb2e5",
+                        "#d97a2b",
+                        "#14365d"
+                      ]
+                    }
+                  }
+                }
+              },
+              {
+                "mark": {
+                  "type": "rule",
+                  "color": "#8a9bb0"
+                },
+                "encoding": {
+                  "y": {
+                    "datum": 0
+                  }
+                }
+              },
+              {
+                "mark": {
+                  "type": "text",
+                  "dy": -8,
+                  "fontSize": 11,
+                  "color": "#14365d"
+                },
+                "encoding": {
+                  "y": {
+                    "field": "LABEL_Y",
+                    "type": "quantitative"
+                  },
+                  "text": {
+                    "field": "AMOUNT",
+                    "type": "quantitative",
+                    "format": "$,.3s"
+                  }
+                }
+              }
+            ],
+            "encoding": {
+              "x": {
+                "field": "STEP",
+                "type": "nominal",
+                "title": null,
+                "sort": {
+                  "field": "STEP_ORDER"
+                },
+                "axis": {
+                  "labelAngle": 0,
+                  "labelLimit": 200
+                }
+              },
+              "tooltip": [
+                {
+                  "field": "STEP",
+                  "title": "Step"
+                },
+                {
+                  "field": "AMOUNT",
+                  "type": "quantitative",
+                  "format": "$,.0f",
+                  "title": "Amount"
+                },
+                {
+                  "field": "END_VALUE",
+                  "type": "quantitative",
+                  "format": "$,.0f",
+                  "title": "Running variance"
+                }
+              ]
+            }
+          },
+          "datasources": [
+            "ds-waterfall"
+          ]
+        },
+        {
+          "tile_id": "bubble",
+          "title": "Accounts: Target vs Attainment (bubble size = net revenue)",
+          "type": "chart",
+          "spec": {
+            "layer": [
+              {
+                "mark": {
+                  "type": "rule",
+                  "strokeDash": [
+                    4,
+                    4
+                  ],
+                  "color": "#8a9bb0"
+                },
+                "encoding": {
+                  "y": {
+                    "datum": 1
+                  }
+                }
+              },
+              {
+                "mark": {
+                  "type": "circle",
+                  "opacity": 0.75,
+                  "stroke": "white",
+                  "strokeWidth": 1
+                },
+                "encoding": {
+                  "x": {
+                    "field": "REVENUE_TARGET",
+                    "type": "quantitative",
+                    "title": "Target (USD)",
+                    "axis": {
+                      "format": "$,.2s"
+                    },
+                    "scale": {
+                      "type": "log"
+                    }
+                  },
+                  "y": {
+                    "field": "ATTAINMENT",
+                    "type": "quantitative",
+                    "title": "Attainment",
+                    "axis": {
+                      "format": ".0%"
+                    }
+                  },
+                  "size": {
+                    "field": "NET_REVENUE",
+                    "type": "quantitative",
+                    "title": "Net revenue",
+                    "scale": {
+                      "range": [
+                        20,
+                        900
+                      ]
+                    },
+                    "legend": null
+                  },
+                  "color": {
+                    "field": "REGION",
+                    "type": "nominal",
+                    "title": "Region",
+                    "scale": {
+                      "domain": [
+                        "Americas",
+                        "EMEA",
+                        "APAC"
+                      ],
+                      "range": [
+                        "#14365d",
+                        "#2563a8",
+                        "#7fb2e5"
+                      ]
+                    }
+                  },
+                  "tooltip": [
+                    {
+                      "field": "CUSTOMER_NAME",
+                      "title": "Account"
+                    },
+                    {
+                      "field": "SEGMENT"
+                    },
+                    {
+                      "field": "NET_REVENUE",
+                      "type": "quantitative",
+                      "format": "$,.0f",
+                      "title": "Net revenue"
+                    },
+                    {
+                      "field": "REVENUE_TARGET",
+                      "type": "quantitative",
+                      "format": "$,.0f",
+                      "title": "Target"
+                    },
+                    {
+                      "field": "ATTAINMENT",
+                      "type": "quantitative",
+                      "format": ".1%"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "datasources": [
+            "ds-bubble"
           ]
         },
         {
@@ -602,15 +847,27 @@
           "w": 6,
           "h": 4
         },
-        "ask": {
+        "waterfall": {
           "x": 6,
           "y": 12,
           "w": 6,
           "h": 4
         },
-        "accounts": {
+        "bubble": {
           "x": 0,
           "y": 16,
+          "w": 8,
+          "h": 5
+        },
+        "ask": {
+          "x": 8,
+          "y": 16,
+          "w": 4,
+          "h": 5
+        },
+        "accounts": {
+          "x": 0,
+          "y": 21,
           "w": 12,
           "h": 6
         }
@@ -860,6 +1117,98 @@
         }
       ],
       "sql": "SELECT RECORDED_DRIVER, SUM(NET_REVENUE) - SUM(REVENUE_TARGET) AS VARIANCE,\n    SUM(TOTAL_DISCOUNTS) AS DISCOUNTS, SUM(TOTAL_REFUNDS) AS REFUNDS, COUNT(DISTINCT CUSTOMER_NAME) AS ACCOUNTS\nFROM (SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name, revenue.recorded_driver, customers.customer_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds))\nWHERE {{ filter('MONTH') }}\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\nGROUP BY RECORDED_DRIVER\nORDER BY VARIANCE",
+      "filter_bindings": [
+        {
+          "filter_id": "MONTH"
+        },
+        {
+          "filter_id": "REGION"
+        },
+        {
+          "filter_id": "SEGMENT"
+        },
+        {
+          "filter_id": "PRODUCT_NAME"
+        }
+      ]
+    },
+    "ds-waterfall": {
+      "type": "sql",
+      "columns": [
+        {
+          "name": "STEP_ORDER",
+          "type": "NUMBER"
+        },
+        {
+          "name": "STEP",
+          "type": "VARCHAR"
+        },
+        {
+          "name": "KIND",
+          "type": "VARCHAR"
+        },
+        {
+          "name": "START_VALUE",
+          "type": "NUMBER"
+        },
+        {
+          "name": "END_VALUE",
+          "type": "NUMBER"
+        },
+        {
+          "name": "AMOUNT",
+          "type": "NUMBER"
+        },
+        {
+          "name": "LABEL_Y",
+          "type": "NUMBER"
+        }
+      ],
+      "sql": "WITH d AS (\n    SELECT RECORDED_DRIVER, SUM(NET_REVENUE) - SUM(REVENUE_TARGET) AS V\n    FROM (SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name, revenue.recorded_driver\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds))\n    WHERE {{ filter('MONTH') }}\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n    GROUP BY RECORDED_DRIVER\n),\nsteps AS (\n    SELECT ROW_NUMBER() OVER (ORDER BY V DESC) AS STEP_ORDER,\n        DECODE(RECORDED_DRIVER, 'NORMAL_TRADING', 'Normal trading', 'RECORDED_RENEWAL_DELAY', 'Renewal delay',\n            'RECORDED_CONTRACT_DOWNSIZE', 'Contract downsize', 'RECORDED_DISCOUNT_AND_SERVICE_CREDIT', 'Discounts & credits',\n            RECORDED_DRIVER) AS STEP,\n        IFF(V < 0, 'Decrease', 'Increase') AS KIND,\n        COALESCE(SUM(V) OVER (ORDER BY V DESC ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING), 0) AS START_VALUE,\n        SUM(V) OVER (ORDER BY V DESC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS END_VALUE,\n        V AS AMOUNT\n    FROM d\n    UNION ALL\n    SELECT 99, 'Total variance', 'Total', 0, SUM(V), SUM(V) FROM d\n)\nSELECT STEP_ORDER, STEP, KIND, START_VALUE, END_VALUE, AMOUNT, GREATEST(START_VALUE, END_VALUE) AS LABEL_Y\nFROM steps\nORDER BY STEP_ORDER",
+      "filter_bindings": [
+        {
+          "filter_id": "MONTH"
+        },
+        {
+          "filter_id": "REGION"
+        },
+        {
+          "filter_id": "SEGMENT"
+        },
+        {
+          "filter_id": "PRODUCT_NAME"
+        }
+      ]
+    },
+    "ds-bubble": {
+      "type": "sql",
+      "columns": [
+        {
+          "name": "CUSTOMER_NAME",
+          "type": "VARCHAR"
+        },
+        {
+          "name": "REGION",
+          "type": "VARCHAR"
+        },
+        {
+          "name": "SEGMENT",
+          "type": "VARCHAR"
+        },
+        {
+          "name": "NET_REVENUE",
+          "type": "NUMBER"
+        },
+        {
+          "name": "REVENUE_TARGET",
+          "type": "NUMBER"
+        },
+        {
+          "name": "ATTAINMENT",
+          "type": "NUMBER"
+        }
+      ],
+      "sql": "SELECT CUSTOMER_NAME, REGION, SEGMENT, SUM(NET_REVENUE) AS NET_REVENUE,\n    SUM(REVENUE_TARGET) AS REVENUE_TARGET,\n    DIV0NULL(SUM(NET_REVENUE), SUM(REVENUE_TARGET)) AS ATTAINMENT\nFROM (SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name, customers.customer_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds))\nWHERE {{ filter('MONTH') }}\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\nGROUP BY CUSTOMER_NAME, REGION, SEGMENT",
       "filter_bindings": [
         {
           "filter_id": "MONTH"

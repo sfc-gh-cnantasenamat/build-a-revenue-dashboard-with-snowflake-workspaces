@@ -10,6 +10,11 @@ SV = f'{FQ}.{CONFIG["semantic_view"]}'
 FILTERS = ("MONTH", "REGION", "SEGMENT", "PRODUCT_NAME")
 NUM, TXT, DATE = "NUMBER", "VARCHAR", "DATE"
 
+# Professional blue palette. Amber is the single contrast colour for shortfalls.
+NAVY, BLUE, SKY, MIST, SLATE, AMBER = "#14365d", "#2563a8", "#7fb2e5", "#eaf1f8", "#8a9bb0", "#d97a2b"
+REGION_SCALE = {"domain": ["Americas", "EMEA", "APAC"], "range": [NAVY, BLUE, SKY]}
+SIGN_COLOR = {"condition": {"test": "datum.VARIANCE < 0", "value": AMBER}, "value": BLUE}
+
 
 def base(extra_dims="", shift_year=False, metrics="revenue.net_revenue, revenue.revenue_target, "
          "revenue.gross_profit, revenue.total_discounts, revenue.total_refunds"):
@@ -85,7 +90,8 @@ add("trend", {"title": "Monthly Net Revenue vs Target (all 24 months)", "type": 
     "mark": {"type": "line", "point": True, "interpolate": "monotone"},
     "encoding": {"x": {"field": "MONTH", "type": "temporal", "title": "Month"},
                  "y": {"field": "VALUE", "type": "quantitative", "title": "USD", "axis": {"format": "$,.2s"}},
-                 "color": {"field": "SERIES_LABEL", "type": "nominal", "title": None},
+                 "color": {"field": "SERIES_LABEL", "type": "nominal", "title": None,
+                           "scale": {"domain": ["Net revenue", "Target"], "range": [BLUE, SLATE]}},
                  "strokeDash": {"field": "SERIES_LABEL", "type": "nominal", "legend": None},
                  "tooltip": [{"field": "MONTH", "type": "temporal", "format": "%b %Y"},
                              {"field": "SERIES_LABEL", "title": "Series"},
@@ -99,7 +105,7 @@ add("by-region", {"title": "Variance to Target by Region", "type": "chart", "spe
     "mark": {"type": "bar", "cornerRadiusEnd": 3},
     "encoding": {"y": {"field": "REGION", "type": "nominal", "sort": "x", "title": None},
                  "x": {"field": "VARIANCE", "type": "quantitative", "title": "USD vs target", "axis": {"format": "$,.2s"}},
-                 "color": {"condition": {"test": "datum.VARIANCE < 0", "value": "#d3132f"}, "value": "#0e9c73"},
+                 "color": SIGN_COLOR,
                  "tooltip": [{"field": "REGION"}, {"field": "NET_REVENUE", "type": "quantitative", "format": "$,.0f", "title": "Net revenue"},
                              {"field": "REVENUE_TARGET", "type": "quantitative", "format": "$,.0f", "title": "Target"},
                              {"field": "VARIANCE", "type": "quantitative", "format": "$,.0f", "title": "Variance"},
@@ -114,12 +120,18 @@ add("by-region", {"title": "Variance to Target by Region", "type": "chart", "spe
 add("heatmap", {"title": "Target Attainment: Region x Segment", "type": "chart", "spec": {
     "layer": [
         {"mark": {"type": "rect", "stroke": "white", "strokeWidth": 2},
+         # Below 100% fades to amber. At or above target the cells sit in a narrow 102-104% band, so the
+         # blue ramp is fitted to that band to make small differences visible.
          "encoding": {"color": {"field": "ATTAINMENT", "type": "quantitative", "title": "Attainment",
-                                "scale": {"domain": [0.5, 1, 1.1], "range": ["#d3132f", "#f5f5f5", "#0e9c73"]},
-                                "legend": {"format": ".0%"}}}},
+                                "scale": {"domain": [0.55, 1, 1.02, 1.035],
+                                          "range": [AMBER, MIST, SKY, NAVY], "clamp": True, "interpolate": "rgb"},
+                                "legend": {"format": ".1%"}}}},
         {"mark": {"type": "text", "fontWeight": "bold"},
-         "encoding": {"text": {"field": "ATTAINMENT", "type": "quantitative", "format": ".0%"}}}],
-    "encoding": {"x": {"field": "SEGMENT", "type": "nominal", "title": None, "sort": ["Enterprise", "Mid-market", "SMB"]},
+         "encoding": {"text": {"field": "ATTAINMENT", "type": "quantitative", "format": ".1%"},
+                      "color": {"condition": {"test": "datum.ATTAINMENT >= 1.027 || datum.ATTAINMENT < 0.7", "value": "white"},
+                                "value": NAVY}}}],
+    "encoding": {"x": {"field": "SEGMENT", "type": "nominal", "title": None, "sort": ["Enterprise", "Mid-market", "SMB"],
+                       "axis": {"labelAngle": 0}},
                  "y": {"field": "REGION", "type": "nominal", "title": None},
                  "tooltip": [{"field": "REGION"}, {"field": "SEGMENT"},
                              {"field": "ATTAINMENT", "type": "quantitative", "format": ".1%"},
@@ -136,7 +148,7 @@ add("drivers", {"title": "What Sales Ops Recorded: Variance by Driver", "type": 
     "mark": {"type": "bar", "cornerRadiusEnd": 3},
     "encoding": {"y": {"field": "DRIVER", "type": "nominal", "sort": "x", "title": None},
                  "x": {"field": "VARIANCE", "type": "quantitative", "title": "USD vs target", "axis": {"format": "$,.2s"}},
-                 "color": {"condition": {"test": "datum.VARIANCE < 0", "value": "#d3132f"}, "value": "#0e9c73"},
+                 "color": SIGN_COLOR,
                  "tooltip": [{"field": "DRIVER"}, {"field": "VARIANCE", "type": "quantitative", "format": "$,.0f"},
                              {"field": "DISCOUNTS", "type": "quantitative", "format": "$,.0f"},
                              {"field": "REFUNDS", "type": "quantitative", "format": "$,.0f"},
@@ -147,6 +159,69 @@ add("drivers", {"title": "What Sales Ops Recorded: Variance by Driver", "type": 
                f"FROM ({base(driver_dims + ', customers.customer_name')})\n{where()}\nGROUP BY RECORDED_DRIVER\nORDER BY VARIANCE",
                [("RECORDED_DRIVER", TXT), ("VARIANCE", NUM), ("DISCOUNTS", NUM), ("REFUNDS", NUM), ("ACCOUNTS", NUM)]))
 
+# Waterfall: start on target (zero variance), step through each recorded driver, end at the total gap.
+add("waterfall", {"title": "Variance Bridge: How Each Recorded Driver Moves Us vs Target", "type": "chart", "spec": {
+    "layer": [
+        {"mark": {"type": "bar", "cornerRadius": 2},
+         "encoding": {"y": {"field": "START_VALUE", "type": "quantitative", "title": "USD vs target",
+                           "axis": {"format": "$,.2s"}},
+                     "y2": {"field": "END_VALUE"},
+                     "color": {"field": "KIND", "type": "nominal", "title": None,
+                               "scale": {"domain": ["Increase", "Decrease", "Total"], "range": [SKY, AMBER, NAVY]}}}},
+        {"mark": {"type": "rule", "color": SLATE}, "encoding": {"y": {"datum": 0}}},
+        {"mark": {"type": "text", "dy": -8, "fontSize": 11, "color": NAVY},
+         "encoding": {"y": {"field": "LABEL_Y", "type": "quantitative"},
+                     "text": {"field": "AMOUNT", "type": "quantitative", "format": "$,.3s"}}}],
+    "encoding": {"x": {"field": "STEP", "type": "nominal", "title": None, "sort": {"field": "STEP_ORDER"},
+                       "axis": {"labelAngle": 0, "labelLimit": 200}},
+                 "tooltip": [{"field": "STEP", "title": "Step"},
+                             {"field": "AMOUNT", "type": "quantitative", "format": "$,.0f", "title": "Amount"},
+                             {"field": "END_VALUE", "type": "quantitative", "format": "$,.0f", "title": "Running variance"}]}}},
+    (6, 12, 6, 4),
+    datasource(f"WITH d AS (\n    SELECT RECORDED_DRIVER, SUM(NET_REVENUE) - SUM(REVENUE_TARGET) AS V\n"
+               f"    FROM ({base(driver_dims)})\n    {where()}\n    GROUP BY RECORDED_DRIVER\n),\n"
+               f"steps AS (\n"
+               f"    SELECT ROW_NUMBER() OVER (ORDER BY V DESC) AS STEP_ORDER,\n"
+               f"        DECODE(RECORDED_DRIVER, 'NORMAL_TRADING', 'Normal trading', 'RECORDED_RENEWAL_DELAY', 'Renewal delay',\n"
+               f"            'RECORDED_CONTRACT_DOWNSIZE', 'Contract downsize', 'RECORDED_DISCOUNT_AND_SERVICE_CREDIT', 'Discounts & credits',\n"
+               f"            RECORDED_DRIVER) AS STEP,\n"
+               f"        IFF(V < 0, 'Decrease', 'Increase') AS KIND,\n"
+               f"        COALESCE(SUM(V) OVER (ORDER BY V DESC ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING), 0) AS START_VALUE,\n"
+               f"        SUM(V) OVER (ORDER BY V DESC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS END_VALUE,\n"
+               f"        V AS AMOUNT\n    FROM d\n"
+               f"    UNION ALL\n"
+               f"    SELECT 99, 'Total variance', 'Total', 0, SUM(V), SUM(V) FROM d\n)\n"
+               f"SELECT STEP_ORDER, STEP, KIND, START_VALUE, END_VALUE, AMOUNT, GREATEST(START_VALUE, END_VALUE) AS LABEL_Y\n"
+               f"FROM steps\nORDER BY STEP_ORDER",
+               [("STEP_ORDER", NUM), ("STEP", TXT), ("KIND", TXT), ("START_VALUE", NUM), ("END_VALUE", NUM),
+                ("AMOUNT", NUM), ("LABEL_Y", NUM)]))
+
+# Bubble: one point per account. Position shows size of book vs attainment; area shows net revenue.
+add("bubble", {"title": "Accounts: Target vs Attainment (bubble size = net revenue)", "type": "chart", "spec": {
+    "layer": [
+        {"mark": {"type": "rule", "strokeDash": [4, 4], "color": SLATE},
+         "encoding": {"y": {"datum": 1}}},
+        {"mark": {"type": "circle", "opacity": 0.75, "stroke": "white", "strokeWidth": 1},
+         "encoding": {"x": {"field": "REVENUE_TARGET", "type": "quantitative", "title": "Target (USD)",
+                           "axis": {"format": "$,.2s"}, "scale": {"type": "log"}},
+                     "y": {"field": "ATTAINMENT", "type": "quantitative", "title": "Attainment",
+                           "axis": {"format": ".0%"}},
+                     "size": {"field": "NET_REVENUE", "type": "quantitative", "title": "Net revenue",
+                              "scale": {"range": [20, 900]}, "legend": None},
+                     "color": {"field": "REGION", "type": "nominal", "title": "Region", "scale": REGION_SCALE},
+                     "tooltip": [{"field": "CUSTOMER_NAME", "title": "Account"}, {"field": "SEGMENT"},
+                                 {"field": "NET_REVENUE", "type": "quantitative", "format": "$,.0f", "title": "Net revenue"},
+                                 {"field": "REVENUE_TARGET", "type": "quantitative", "format": "$,.0f", "title": "Target"},
+                                 {"field": "ATTAINMENT", "type": "quantitative", "format": ".1%"}]}}]}},
+    (0, 16, 8, 5),
+    datasource(f"SELECT CUSTOMER_NAME, REGION, SEGMENT, SUM(NET_REVENUE) AS NET_REVENUE,\n"
+               f"    SUM(REVENUE_TARGET) AS REVENUE_TARGET,\n"
+               f"    DIV0NULL(SUM(NET_REVENUE), SUM(REVENUE_TARGET)) AS ATTAINMENT\n"
+               f"FROM ({base(', customers.customer_name')})\n{where()}\n"
+               f"GROUP BY CUSTOMER_NAME, REGION, SEGMENT",
+               [("CUSTOMER_NAME", TXT), ("REGION", TXT), ("SEGMENT", TXT), ("NET_REVENUE", NUM),
+                ("REVENUE_TARGET", NUM), ("ATTAINMENT", NUM)]))
+
 add("ask", {"type": "text", "text": (
     "### Ask Revenue Advisor\nUse the chat box below this dashboard. Try:\n"
     "- *Why is EMEA Enterprise behind target in Q3 2026? Quantify the drivers.*\n"
@@ -154,7 +229,7 @@ add("ask", {"type": "text", "text": (
     "- *Will the renewal-delayed revenue recover in Q4?*\n"
     "- *How much of the gap is associated with discounts and refunds?*\n\n"
     "Drivers come from the `RECORDED_DRIVER` field logged by sales ops. They are recorded reasons, not inferred causes.")},
-    (6, 12, 6, 4))
+    (8, 16, 4, 5))
 
 add("accounts", {"title": "Account Detail (sorted by variance)", "type": "table", "spec": {"columns": [
     {"field": "CUSTOMER_NAME", "label": "Account"}, {"field": "REGION", "label": "Region"},
@@ -162,7 +237,7 @@ add("accounts", {"title": "Account Detail (sorted by variance)", "type": "table"
     {"field": "REVENUE_TARGET", "label": "Target (USD)"}, {"field": "VARIANCE", "label": "Variance (USD)"},
     {"field": "ATTAINMENT_PCT", "label": "Attainment %"}, {"field": "GROSS_MARGIN_PCT", "label": "Gross margin %"},
     {"field": "TOP_DRIVER", "label": "Recorded driver"}]}},
-    (0, 16, 12, 6),
+    (0, 21, 12, 6),
     datasource(f"SELECT CUSTOMER_NAME, REGION, SEGMENT, ROUND(SUM(NET_REVENUE), 0) AS NET_REVENUE,\n"
                f"    ROUND(SUM(REVENUE_TARGET), 0) AS REVENUE_TARGET,\n"
                f"    ROUND(SUM(NET_REVENUE) - SUM(REVENUE_TARGET), 0) AS VARIANCE,\n"
@@ -181,7 +256,7 @@ def options(table, column):
 
 
 dash = {
-    "spec_version": 2, "spec_revision": 4, "version": 2, "title": "Revenue Pulse",
+    "spec_version": 2, "spec_revision": 5, "version": 2, "title": "Revenue Pulse",
     "tabs": [{"order": 0, "tab_id": "default", "title": "Overview", "tiles": tiles}],
     "filters": {
         "MONTH": {"label": "Period", "mode": "range", "valueType": "DATE",
