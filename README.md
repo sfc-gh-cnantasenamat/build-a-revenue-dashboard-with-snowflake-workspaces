@@ -1,6 +1,6 @@
 # Revenue Pulse: build a revenue dashboard with Snowflake Workspaces and CoWork
 
-Companion code for the Snowflake developer guide *Build a Revenue Dashboard with Snowflake Workspaces and CoWork*. You build a native Workspaces dashboard on a revenue semantic view, publish it to a sales-ops role, and ask follow-up "why" questions in Snowflake CoWork. All data is synthetic.
+Companion code for the Snowflake developer guide *Build a Revenue Dashboard with Snowflake Workspaces and CoWork*. You build a native Workspaces dashboard on a revenue semantic view, publish it to a sales-ops role as an artifact, and ask follow-up "why" questions in Snowflake CoWork. All data is synthetic.
 
 Everything runs in Snowsight. You don't need Python, a CLI, or a local clone.
 
