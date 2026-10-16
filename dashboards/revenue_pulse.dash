@@ -46,7 +46,8 @@
           },
           "datasources": [
             "ds-kpi-net-revenue"
-          ]
+          ],
+          "scope": "main"
         },
         {
           "tile_id": "kpi-attainment",
@@ -80,7 +81,8 @@
           },
           "datasources": [
             "ds-kpi-attainment"
-          ]
+          ],
+          "scope": "main"
         },
         {
           "tile_id": "kpi-variance",
@@ -114,7 +116,8 @@
           },
           "datasources": [
             "ds-kpi-variance"
-          ]
+          ],
+          "scope": "main"
         },
         {
           "tile_id": "kpi-margin",
@@ -148,11 +151,12 @@
           },
           "datasources": [
             "ds-kpi-margin"
-          ]
+          ],
+          "scope": "main"
         },
         {
           "tile_id": "trend",
-          "title": "Monthly Net Revenue vs Target (all 24 months)",
+          "title": "Monthly Net Revenue vs Target (drag across months to zoom and filter)",
           "type": "chart",
           "spec": {
             "transform": [
@@ -171,11 +175,6 @@
                 "as": "SERIES_LABEL"
               }
             ],
-            "mark": {
-              "type": "line",
-              "point": true,
-              "interpolate": "monotone"
-            },
             "encoding": {
               "x": {
                 "field": "MONTH",
@@ -186,6 +185,10 @@
                 "field": "VALUE",
                 "type": "quantitative",
                 "title": "USD",
+                "stack": null,
+                "scale": {
+                  "zero": false
+                },
                 "axis": {
                   "format": "$,.2s"
                 }
@@ -200,15 +203,17 @@
                     "Target"
                   ],
                   "range": [
-                    "#2563a8",
-                    "#8a9bb0"
+                    "#4686fb",
+                    "#f66b19"
                   ]
                 }
               },
-              "strokeDash": {
-                "field": "SERIES_LABEL",
-                "type": "nominal",
-                "legend": null
+              "fillOpacity": {
+                "condition": {
+                  "test": "datum.SERIES === 'NET_REVENUE'",
+                  "value": 0.3
+                },
+                "value": 0
               },
               "tooltip": [
                 {
@@ -226,76 +231,290 @@
                   "format": "$,.0f"
                 }
               ]
+            },
+            "mark": {
+              "type": "area",
+              "interpolate": "monotone",
+              "clip": true,
+              "line": {
+                "strokeWidth": 2.5
+              },
+              "point": true
             }
           },
           "datasources": [
             "ds-trend"
+          ],
+          "scope": "main",
+          "interactions": [
+            {
+              "trigger": "select",
+              "fields": [
+                "MONTH"
+              ],
+              "operator": "set_filter",
+              "targets": [
+                {
+                  "scope": "main",
+                  "fields": [
+                    "MONTH"
+                  ],
+                  "filter": "BRUSH_MONTH"
+                },
+                {
+                  "scope": "heat",
+                  "fields": [
+                    "MONTH"
+                  ],
+                  "filter": "BRUSH_MONTH"
+                },
+                {
+                  "scope": "region",
+                  "fields": [
+                    "MONTH"
+                  ],
+                  "filter": "BRUSH_MONTH"
+                }
+              ]
+            }
           ]
         },
         {
           "tile_id": "by-region",
-          "title": "Variance to Target by Region",
+          "title": "Variance to Target by Region (click a region to drill the charts below)",
           "type": "chart",
           "spec": {
-            "mark": {
-              "type": "bar",
-              "cornerRadiusEnd": 3
-            },
-            "encoding": {
-              "y": {
-                "field": "REGION",
-                "type": "nominal",
-                "sort": "x",
-                "title": null
-              },
-              "x": {
-                "field": "VARIANCE",
-                "type": "quantitative",
-                "title": "USD vs target",
-                "axis": {
-                  "format": "$,.2s"
+            "layer": [
+              {
+                "mark": {
+                  "type": "bar",
+                  "cornerRadiusEnd": 3
+                },
+                "encoding": {
+                  "y": {
+                    "field": "DRILL_REGION",
+                    "type": "nominal",
+                    "sort": "x",
+                    "title": null,
+                    "axis": {
+                      "labelExpr": "peek(split(datum.label, ' \u203a '))",
+                      "labelLimit": 180
+                    }
+                  },
+                  "x": {
+                    "field": "VARIANCE",
+                    "type": "quantitative",
+                    "title": "USD vs target",
+                    "axis": {
+                      "format": "$,.2s"
+                    },
+                    "scale": {
+                      "range": [
+                        0,
+                        {
+                          "expr": "width - 28"
+                        }
+                      ]
+                    }
+                  },
+                  "color": {
+                    "field": "VARIANCE",
+                    "type": "quantitative",
+                    "title": "Variance",
+                    "scale": {
+                      "scheme": {
+                        "name": "turbo",
+                        "extent": [
+                          0.92,
+                          0.1
+                        ]
+                      },
+                      "domainMid": 0
+                    },
+                    "legend": null
+                  },
+                  "tooltip": [
+                    {
+                      "field": "LEVEL",
+                      "title": "Level"
+                    },
+                    {
+                      "field": "DRILL_REGION",
+                      "title": "Path"
+                    },
+                    {
+                      "field": "NET_REVENUE",
+                      "type": "quantitative",
+                      "format": "$,.0f",
+                      "title": "Net revenue"
+                    },
+                    {
+                      "field": "REVENUE_TARGET",
+                      "type": "quantitative",
+                      "format": "$,.0f",
+                      "title": "Target"
+                    },
+                    {
+                      "field": "VARIANCE",
+                      "type": "quantitative",
+                      "format": "$,.0f",
+                      "title": "Variance"
+                    },
+                    {
+                      "field": "ATTAINMENT",
+                      "type": "quantitative",
+                      "format": ".1%",
+                      "title": "Attainment"
+                    }
+                  ]
                 }
               },
-              "color": {
-                "condition": {
-                  "test": "datum.VARIANCE < 0",
-                  "value": "#d97a2b"
+              {
+                "transform": [
+                  {
+                    "aggregate": [
+                      {
+                        "op": "min",
+                        "field": "VARIANCE",
+                        "as": "LO"
+                      },
+                      {
+                        "op": "max",
+                        "field": "VARIANCE",
+                        "as": "HI"
+                      }
+                    ]
+                  },
+                  {
+                    "calculate": "sequence(0, 50)",
+                    "as": "I"
+                  },
+                  {
+                    "flatten": [
+                      "I"
+                    ]
+                  },
+                  {
+                    "calculate": "datum.LO + (datum.HI - datum.LO) * datum.I / 50",
+                    "as": "V"
+                  },
+                  {
+                    "calculate": "datum.LO + (datum.HI - datum.LO) * (datum.I + 1) / 50",
+                    "as": "V2"
+                  }
+                ],
+                "mark": {
+                  "type": "rect"
                 },
-                "value": "#2563a8"
-              },
-              "tooltip": [
-                {
-                  "field": "REGION"
-                },
-                {
-                  "field": "NET_REVENUE",
-                  "type": "quantitative",
-                  "format": "$,.0f",
-                  "title": "Net revenue"
-                },
-                {
-                  "field": "REVENUE_TARGET",
-                  "type": "quantitative",
-                  "format": "$,.0f",
-                  "title": "Target"
-                },
-                {
-                  "field": "VARIANCE",
-                  "type": "quantitative",
-                  "format": "$,.0f",
-                  "title": "Variance"
-                },
-                {
-                  "field": "ATTAINMENT",
-                  "type": "quantitative",
-                  "format": ".1%",
-                  "title": "Attainment"
+                "encoding": {
+                  "x": {
+                    "datum": 0,
+                    "axis": null,
+                    "scale": {
+                      "domain": [
+                        0,
+                        1
+                      ],
+                      "range": [
+                        {
+                          "expr": "width - 14"
+                        },
+                        {
+                          "expr": "width"
+                        }
+                      ]
+                    }
+                  },
+                  "x2": {
+                    "datum": 1
+                  },
+                  "y": {
+                    "field": "V",
+                    "type": "quantitative",
+                    "title": "Variance",
+                    "scale": {
+                      "zero": false,
+                      "nice": false,
+                      "range": [
+                        {
+                          "expr": "height * 0.85"
+                        },
+                        {
+                          "expr": "height * 0.15"
+                        }
+                      ]
+                    },
+                    "axis": {
+                      "orient": "right",
+                      "offset": 4,
+                      "format": "$,.2s",
+                      "tickCount": 4,
+                      "grid": false,
+                      "domain": false,
+                      "titleAngle": 90
+                    }
+                  },
+                  "y2": {
+                    "field": "V2"
+                  },
+                  "color": {
+                    "field": "V",
+                    "type": "quantitative",
+                    "scale": {
+                      "scheme": {
+                        "name": "turbo",
+                        "extent": [
+                          0.92,
+                          0.1
+                        ]
+                      },
+                      "domainMid": 0
+                    },
+                    "legend": null
+                  }
                 }
-              ]
+              }
+            ],
+            "resolve": {
+              "scale": {
+                "x": "independent",
+                "y": "independent",
+                "color": "independent"
+              },
+              "axis": {
+                "x": "independent",
+                "y": "independent"
+              }
             }
           },
           "datasources": [
             "ds-by-region"
+          ],
+          "scope": "region",
+          "interactions": [
+            {
+              "trigger": "select",
+              "fields": [
+                "DRILL_REGION"
+              ],
+              "operator": "set_filter",
+              "targets": [
+                {
+                  "scope": "main",
+                  "fields": [
+                    "DRILL_REGION"
+                  ],
+                  "filter": "DRILL_REGION"
+                },
+                {
+                  "scope": "heat",
+                  "fields": [
+                    "DRILL_REGION"
+                  ],
+                  "filter": "DRILL_REGION"
+                }
+              ]
+            }
           ]
         },
         {
@@ -305,169 +524,500 @@
           "spec": {
             "layer": [
               {
-                "mark": {
-                  "type": "rect",
-                  "stroke": "white",
-                  "strokeWidth": 2
-                },
-                "encoding": {
-                  "color": {
-                    "field": "ATTAINMENT",
-                    "type": "quantitative",
-                    "title": "Attainment",
-                    "scale": {
-                      "domain": [
-                        0.55,
-                        1,
-                        1.02,
-                        1.035
-                      ],
-                      "range": [
-                        "#d97a2b",
-                        "#eaf1f8",
-                        "#7fb2e5",
-                        "#14365d"
-                      ],
-                      "clamp": true,
-                      "interpolate": "rgb"
+                "transform": [
+                  {
+                    "calculate": "datum.ATTAINMENT",
+                    "as": "HEAT"
+                  },
+                  {
+                    "joinaggregate": [
+                      {
+                        "op": "min",
+                        "field": "HEAT",
+                        "as": "HEAT_LO"
+                      },
+                      {
+                        "op": "max",
+                        "field": "HEAT",
+                        "as": "HEAT_HI"
+                      }
+                    ]
+                  }
+                ],
+                "layer": [
+                  {
+                    "mark": {
+                      "type": "rect",
+                      "stroke": "black",
+                      "strokeWidth": 2
                     },
-                    "legend": {
-                      "format": ".1%"
+                    "encoding": {
+                      "color": {
+                        "field": "HEAT",
+                        "type": "quantitative",
+                        "title": "Attainment",
+                        "scale": {
+                          "scheme": "turbo",
+                          "reverse": true,
+                          "domain": [
+                            0.55,
+                            1.2
+                          ],
+                          "clamp": true
+                        },
+                        "legend": null
+                      }
+                    }
+                  },
+                  {
+                    "mark": {
+                      "type": "text",
+                      "fontWeight": "bold"
+                    },
+                    "encoding": {
+                      "text": {
+                        "field": "ATTAINMENT",
+                        "type": "quantitative",
+                        "format": ".1%"
+                      },
+                      "color": {
+                        "condition": {
+                          "test": "datum.ATTAINMENT < 0.68 || datum.ATTAINMENT > 1.12",
+                          "value": "white"
+                        },
+                        "value": "#14365d"
+                      }
                     }
                   }
+                ],
+                "encoding": {
+                  "x": {
+                    "field": "SEGMENT",
+                    "type": "nominal",
+                    "title": null,
+                    "sort": [
+                      "Enterprise",
+                      "Mid-market",
+                      "SMB"
+                    ],
+                    "axis": {
+                      "labelAngle": 0
+                    },
+                    "scale": {
+                      "range": [
+                        0,
+                        {
+                          "expr": "width - 28"
+                        }
+                      ]
+                    }
+                  },
+                  "y": {
+                    "field": "REGION",
+                    "type": "nominal",
+                    "title": null
+                  },
+                  "tooltip": [
+                    {
+                      "field": "REGION"
+                    },
+                    {
+                      "field": "SEGMENT"
+                    },
+                    {
+                      "field": "ATTAINMENT",
+                      "type": "quantitative",
+                      "format": ".1%"
+                    },
+                    {
+                      "field": "VARIANCE",
+                      "type": "quantitative",
+                      "format": "$,.0f"
+                    }
+                  ]
                 }
               },
               {
+                "transform": [
+                  {
+                    "calculate": "datum.ATTAINMENT",
+                    "as": "HEAT"
+                  },
+                  {
+                    "calculate": "0.55",
+                    "as": "LO"
+                  },
+                  {
+                    "calculate": "1.2",
+                    "as": "HI"
+                  },
+                  {
+                    "aggregate": [
+                      {
+                        "op": "count",
+                        "as": "N"
+                      }
+                    ],
+                    "groupby": [
+                      "LO",
+                      "HI"
+                    ]
+                  },
+                  {
+                    "calculate": "sequence(0, 50)",
+                    "as": "I"
+                  },
+                  {
+                    "flatten": [
+                      "I"
+                    ]
+                  },
+                  {
+                    "calculate": "datum.LO + (datum.HI - datum.LO) * datum.I / 50",
+                    "as": "V"
+                  },
+                  {
+                    "calculate": "datum.LO + (datum.HI - datum.LO) * (datum.I + 1) / 50",
+                    "as": "V2"
+                  }
+                ],
                 "mark": {
-                  "type": "text",
-                  "fontWeight": "bold"
+                  "type": "rect"
                 },
                 "encoding": {
-                  "text": {
-                    "field": "ATTAINMENT",
+                  "x": {
+                    "datum": 0,
+                    "axis": null,
+                    "scale": {
+                      "domain": [
+                        0,
+                        1
+                      ],
+                      "range": [
+                        {
+                          "expr": "width - 14"
+                        },
+                        {
+                          "expr": "width"
+                        }
+                      ]
+                    }
+                  },
+                  "x2": {
+                    "datum": 1
+                  },
+                  "y": {
+                    "field": "V",
                     "type": "quantitative",
-                    "format": ".1%"
+                    "title": "Attainment",
+                    "scale": {
+                      "zero": false,
+                      "nice": false,
+                      "range": [
+                        {
+                          "expr": "height * 0.85"
+                        },
+                        {
+                          "expr": "height * 0.15"
+                        }
+                      ]
+                    },
+                    "axis": {
+                      "orient": "right",
+                      "offset": 4,
+                      "format": ".0%",
+                      "tickCount": 4,
+                      "grid": false,
+                      "domain": false,
+                      "titleAngle": 90
+                    }
+                  },
+                  "y2": {
+                    "field": "V2"
                   },
                   "color": {
-                    "condition": {
-                      "test": "datum.ATTAINMENT >= 1.027 || datum.ATTAINMENT < 0.7",
-                      "value": "white"
+                    "field": "V",
+                    "type": "quantitative",
+                    "scale": {
+                      "scheme": "turbo",
+                      "reverse": true,
+                      "domain": [
+                        0.55,
+                        1.2
+                      ],
+                      "clamp": true
                     },
-                    "value": "#14365d"
+                    "legend": null
                   }
                 }
               }
             ],
-            "encoding": {
-              "x": {
-                "field": "SEGMENT",
-                "type": "nominal",
-                "title": null,
-                "sort": [
-                  "Enterprise",
-                  "Mid-market",
-                  "SMB"
-                ],
-                "axis": {
-                  "labelAngle": 0
-                }
+            "resolve": {
+              "scale": {
+                "x": "independent",
+                "y": "independent",
+                "color": "independent"
               },
-              "y": {
-                "field": "REGION",
-                "type": "nominal",
-                "title": null
-              },
-              "tooltip": [
-                {
-                  "field": "REGION"
-                },
-                {
-                  "field": "SEGMENT"
-                },
-                {
-                  "field": "ATTAINMENT",
-                  "type": "quantitative",
-                  "format": ".1%"
-                },
-                {
-                  "field": "VARIANCE",
-                  "type": "quantitative",
-                  "format": "$,.0f"
-                }
-              ]
+              "axis": {
+                "x": "independent",
+                "y": "independent"
+              }
             }
           },
           "datasources": [
             "ds-heatmap"
+          ],
+          "scope": "heat",
+          "interactions": [
+            {
+              "trigger": "select",
+              "fields": [
+                "REGION",
+                "SEGMENT"
+              ],
+              "operator": "set_filter",
+              "targets": [
+                {
+                  "scope": "main",
+                  "fields": [
+                    "REGION"
+                  ],
+                  "filter": "REGION"
+                },
+                {
+                  "scope": "main",
+                  "fields": [
+                    "SEGMENT"
+                  ],
+                  "filter": "SEGMENT"
+                },
+                {
+                  "scope": "region",
+                  "fields": [
+                    "REGION"
+                  ],
+                  "filter": "REGION"
+                },
+                {
+                  "scope": "region",
+                  "fields": [
+                    "SEGMENT"
+                  ],
+                  "filter": "SEGMENT"
+                }
+              ]
+            }
           ]
         },
         {
           "tile_id": "drivers",
-          "title": "What Sales Ops Recorded: Variance by Driver",
+          "title": "What Sales Ops Recorded: Variance by Driver (follows the region you click)",
           "type": "chart",
           "spec": {
-            "transform": [
+            "layer": [
               {
-                "calculate": "replace(replace(datum.RECORDED_DRIVER, 'RECORDED_', ''), /_/g, ' ')",
-                "as": "DRIVER"
+                "mark": {
+                  "type": "bar",
+                  "cornerRadiusEnd": 3
+                },
+                "encoding": {
+                  "y": {
+                    "field": "DRILL_DRIVER",
+                    "type": "nominal",
+                    "sort": "x",
+                    "title": null,
+                    "axis": {
+                      "labelExpr": "split(replace(peek(split(datum.label, ' \u203a ')), 'RECORDED_', ''), '_')",
+                      "labelLimit": 200,
+                      "labelLineHeight": 13
+                    }
+                  },
+                  "x": {
+                    "field": "VARIANCE",
+                    "type": "quantitative",
+                    "title": "USD vs target",
+                    "axis": {
+                      "format": "$,.2s"
+                    },
+                    "scale": {
+                      "range": [
+                        0,
+                        {
+                          "expr": "width - 28"
+                        }
+                      ]
+                    }
+                  },
+                  "color": {
+                    "field": "VARIANCE",
+                    "type": "quantitative",
+                    "title": "Variance",
+                    "scale": {
+                      "scheme": {
+                        "name": "turbo",
+                        "extent": [
+                          0.92,
+                          0.1
+                        ]
+                      },
+                      "domainMid": 0
+                    },
+                    "legend": null
+                  },
+                  "tooltip": [
+                    {
+                      "field": "LEVEL",
+                      "title": "Level"
+                    },
+                    {
+                      "field": "DRILL_DRIVER",
+                      "title": "Path"
+                    },
+                    {
+                      "field": "VARIANCE",
+                      "type": "quantitative",
+                      "format": "$,.0f"
+                    },
+                    {
+                      "field": "DISCOUNTS",
+                      "type": "quantitative",
+                      "format": "$,.0f"
+                    },
+                    {
+                      "field": "REFUNDS",
+                      "type": "quantitative",
+                      "format": "$,.0f"
+                    },
+                    {
+                      "field": "ACCOUNTS",
+                      "type": "quantitative",
+                      "title": "Accounts"
+                    }
+                  ]
+                }
+              },
+              {
+                "transform": [
+                  {
+                    "aggregate": [
+                      {
+                        "op": "min",
+                        "field": "VARIANCE",
+                        "as": "LO"
+                      },
+                      {
+                        "op": "max",
+                        "field": "VARIANCE",
+                        "as": "HI"
+                      }
+                    ]
+                  },
+                  {
+                    "calculate": "sequence(0, 50)",
+                    "as": "I"
+                  },
+                  {
+                    "flatten": [
+                      "I"
+                    ]
+                  },
+                  {
+                    "calculate": "datum.LO + (datum.HI - datum.LO) * datum.I / 50",
+                    "as": "V"
+                  },
+                  {
+                    "calculate": "datum.LO + (datum.HI - datum.LO) * (datum.I + 1) / 50",
+                    "as": "V2"
+                  }
+                ],
+                "mark": {
+                  "type": "rect"
+                },
+                "encoding": {
+                  "x": {
+                    "datum": 0,
+                    "axis": null,
+                    "scale": {
+                      "domain": [
+                        0,
+                        1
+                      ],
+                      "range": [
+                        {
+                          "expr": "width - 14"
+                        },
+                        {
+                          "expr": "width"
+                        }
+                      ]
+                    }
+                  },
+                  "x2": {
+                    "datum": 1
+                  },
+                  "y": {
+                    "field": "V",
+                    "type": "quantitative",
+                    "title": "Variance",
+                    "scale": {
+                      "zero": false,
+                      "nice": false,
+                      "range": [
+                        {
+                          "expr": "height * 0.85"
+                        },
+                        {
+                          "expr": "height * 0.15"
+                        }
+                      ]
+                    },
+                    "axis": {
+                      "orient": "right",
+                      "offset": 4,
+                      "format": "$,.2s",
+                      "tickCount": 4,
+                      "grid": false,
+                      "domain": false,
+                      "titleAngle": 90
+                    }
+                  },
+                  "y2": {
+                    "field": "V2"
+                  },
+                  "color": {
+                    "field": "V",
+                    "type": "quantitative",
+                    "scale": {
+                      "scheme": {
+                        "name": "turbo",
+                        "extent": [
+                          0.92,
+                          0.1
+                        ]
+                      },
+                      "domainMid": 0
+                    },
+                    "legend": null
+                  }
+                }
               }
             ],
-            "mark": {
-              "type": "bar",
-              "cornerRadiusEnd": 3
-            },
-            "encoding": {
-              "y": {
-                "field": "DRIVER",
-                "type": "nominal",
-                "sort": "x",
-                "title": null
+            "resolve": {
+              "scale": {
+                "x": "independent",
+                "y": "independent",
+                "color": "independent"
               },
-              "x": {
-                "field": "VARIANCE",
-                "type": "quantitative",
-                "title": "USD vs target",
-                "axis": {
-                  "format": "$,.2s"
-                }
-              },
-              "color": {
-                "condition": {
-                  "test": "datum.VARIANCE < 0",
-                  "value": "#d97a2b"
-                },
-                "value": "#2563a8"
-              },
-              "tooltip": [
-                {
-                  "field": "DRIVER"
-                },
-                {
-                  "field": "VARIANCE",
-                  "type": "quantitative",
-                  "format": "$,.0f"
-                },
-                {
-                  "field": "DISCOUNTS",
-                  "type": "quantitative",
-                  "format": "$,.0f"
-                },
-                {
-                  "field": "REFUNDS",
-                  "type": "quantitative",
-                  "format": "$,.0f"
-                },
-                {
-                  "field": "ACCOUNTS",
-                  "type": "quantitative",
-                  "title": "Accounts"
-                }
-              ]
+              "axis": {
+                "x": "independent",
+                "y": "independent"
+              }
             }
           },
           "datasources": [
             "ds-drivers"
-          ]
+          ],
+          "scope": "detail"
         },
         {
           "tile_id": "waterfall",
@@ -476,108 +1026,272 @@
           "spec": {
             "layer": [
               {
+                "layer": [
+                  {
+                    "mark": {
+                      "type": "bar",
+                      "width": {
+                        "band": 0.6
+                      }
+                    },
+                    "encoding": {
+                      "y": {
+                        "field": "START_VALUE",
+                        "type": "quantitative",
+                        "title": "USD vs target",
+                        "axis": {
+                          "format": "$,.2s"
+                        }
+                      },
+                      "y2": {
+                        "field": "END_VALUE"
+                      },
+                      "color": {
+                        "field": "AMOUNT",
+                        "type": "quantitative",
+                        "title": "Amount",
+                        "scale": {
+                          "scheme": {
+                            "name": "turbo",
+                            "extent": [
+                              0.92,
+                              0.1
+                            ]
+                          },
+                          "domainMid": 0
+                        },
+                        "legend": null
+                      }
+                    }
+                  },
+                  {
+                    "mark": {
+                      "type": "rule",
+                      "color": "#8a9bb0"
+                    },
+                    "encoding": {
+                      "y": {
+                        "datum": 0
+                      }
+                    }
+                  },
+                  {
+                    "transform": [
+                      {
+                        "filter": "datum.KIND !== 'Total'"
+                      }
+                    ],
+                    "mark": {
+                      "type": "rule",
+                      "strokeDash": [
+                        3,
+                        3
+                      ],
+                      "color": "#8a9bb0",
+                      "xOffset": {
+                        "expr": "bandwidth('x') * 0.3"
+                      },
+                      "x2Offset": {
+                        "expr": "-bandwidth('x') * 0.3"
+                      }
+                    },
+                    "encoding": {
+                      "y": {
+                        "field": "END_VALUE",
+                        "type": "quantitative"
+                      },
+                      "x2": {
+                        "field": "NEXT_STEP"
+                      }
+                    }
+                  },
+                  {
+                    "mark": {
+                      "type": "text",
+                      "fontSize": 11,
+                      "color": "#8a9bb0",
+                      "dy": {
+                        "expr": "datum.AMOUNT < 0 ? 10 : -8"
+                      }
+                    },
+                    "encoding": {
+                      "y": {
+                        "field": "LABEL_Y",
+                        "type": "quantitative"
+                      },
+                      "text": {
+                        "field": "AMOUNT",
+                        "type": "quantitative",
+                        "format": "$,.3s"
+                      }
+                    }
+                  }
+                ],
+                "encoding": {
+                  "x": {
+                    "field": "STEP",
+                    "type": "nominal",
+                    "title": null,
+                    "sort": {
+                      "field": "STEP_ORDER"
+                    },
+                    "axis": {
+                      "labelAngle": 0,
+                      "labelOverlap": false,
+                      "labelLineHeight": 14,
+                      "labelExpr": "[substring(datum.label, 0, indexof(datum.label, ' ')), substring(datum.label, indexof(datum.label, ' ') + 1)]"
+                    },
+                    "scale": {
+                      "range": [
+                        0,
+                        {
+                          "expr": "width - 28"
+                        }
+                      ]
+                    }
+                  },
+                  "tooltip": [
+                    {
+                      "field": "STEP",
+                      "title": "Step"
+                    },
+                    {
+                      "field": "AMOUNT",
+                      "type": "quantitative",
+                      "format": "$,.0f",
+                      "title": "Amount"
+                    },
+                    {
+                      "field": "END_VALUE",
+                      "type": "quantitative",
+                      "format": "$,.0f",
+                      "title": "Running variance"
+                    }
+                  ]
+                }
+              },
+              {
+                "transform": [
+                  {
+                    "aggregate": [
+                      {
+                        "op": "min",
+                        "field": "AMOUNT",
+                        "as": "LO"
+                      },
+                      {
+                        "op": "max",
+                        "field": "AMOUNT",
+                        "as": "HI"
+                      }
+                    ]
+                  },
+                  {
+                    "calculate": "sequence(0, 50)",
+                    "as": "I"
+                  },
+                  {
+                    "flatten": [
+                      "I"
+                    ]
+                  },
+                  {
+                    "calculate": "datum.LO + (datum.HI - datum.LO) * datum.I / 50",
+                    "as": "V"
+                  },
+                  {
+                    "calculate": "datum.LO + (datum.HI - datum.LO) * (datum.I + 1) / 50",
+                    "as": "V2"
+                  }
+                ],
                 "mark": {
-                  "type": "bar",
-                  "cornerRadius": 2
+                  "type": "rect"
                 },
                 "encoding": {
+                  "x": {
+                    "datum": 0,
+                    "axis": null,
+                    "scale": {
+                      "domain": [
+                        0,
+                        1
+                      ],
+                      "range": [
+                        {
+                          "expr": "width - 14"
+                        },
+                        {
+                          "expr": "width"
+                        }
+                      ]
+                    }
+                  },
+                  "x2": {
+                    "datum": 1
+                  },
                   "y": {
-                    "field": "START_VALUE",
+                    "field": "V",
                     "type": "quantitative",
-                    "title": "USD vs target",
+                    "title": "Amount",
+                    "scale": {
+                      "zero": false,
+                      "nice": false,
+                      "range": [
+                        {
+                          "expr": "height * 0.85"
+                        },
+                        {
+                          "expr": "height * 0.15"
+                        }
+                      ]
+                    },
                     "axis": {
-                      "format": "$,.2s"
+                      "orient": "right",
+                      "offset": 4,
+                      "format": "$,.2s",
+                      "tickCount": 4,
+                      "grid": false,
+                      "domain": false,
+                      "titleAngle": 90
                     }
                   },
                   "y2": {
-                    "field": "END_VALUE"
+                    "field": "V2"
                   },
                   "color": {
-                    "field": "KIND",
-                    "type": "nominal",
-                    "title": null,
-                    "scale": {
-                      "domain": [
-                        "Increase",
-                        "Decrease",
-                        "Total"
-                      ],
-                      "range": [
-                        "#7fb2e5",
-                        "#d97a2b",
-                        "#14365d"
-                      ]
-                    }
-                  }
-                }
-              },
-              {
-                "mark": {
-                  "type": "rule",
-                  "color": "#8a9bb0"
-                },
-                "encoding": {
-                  "y": {
-                    "datum": 0
-                  }
-                }
-              },
-              {
-                "mark": {
-                  "type": "text",
-                  "dy": -8,
-                  "fontSize": 11,
-                  "color": "#14365d"
-                },
-                "encoding": {
-                  "y": {
-                    "field": "LABEL_Y",
-                    "type": "quantitative"
-                  },
-                  "text": {
-                    "field": "AMOUNT",
+                    "field": "V",
                     "type": "quantitative",
-                    "format": "$,.3s"
+                    "scale": {
+                      "scheme": {
+                        "name": "turbo",
+                        "extent": [
+                          0.92,
+                          0.1
+                        ]
+                      },
+                      "domainMid": 0
+                    },
+                    "legend": null
                   }
                 }
               }
             ],
-            "encoding": {
-              "x": {
-                "field": "STEP",
-                "type": "nominal",
-                "title": null,
-                "sort": {
-                  "field": "STEP_ORDER"
-                },
-                "axis": {
-                  "labelAngle": 0,
-                  "labelLimit": 200
-                }
+            "resolve": {
+              "scale": {
+                "x": "independent",
+                "y": "independent",
+                "color": "independent"
               },
-              "tooltip": [
-                {
-                  "field": "STEP",
-                  "title": "Step"
-                },
-                {
-                  "field": "AMOUNT",
-                  "type": "quantitative",
-                  "format": "$,.0f",
-                  "title": "Amount"
-                },
-                {
-                  "field": "END_VALUE",
-                  "type": "quantitative",
-                  "format": "$,.0f",
-                  "title": "Running variance"
-                }
-              ]
+              "axis": {
+                "x": "independent",
+                "y": "independent"
+              }
             }
           },
           "datasources": [
             "ds-waterfall"
-          ]
+          ],
+          "scope": "main"
         },
         {
           "tile_id": "bubble",
@@ -616,7 +1330,9 @@
                       "format": "$,.2s"
                     },
                     "scale": {
-                      "type": "log"
+                      "type": "log",
+                      "nice": false,
+                      "padding": 48
                     }
                   },
                   "y": {
@@ -624,7 +1340,26 @@
                     "type": "quantitative",
                     "title": "Attainment",
                     "axis": {
-                      "format": ".0%"
+                      "format": ".0%",
+                      "values": [
+                        0,
+                        0.5,
+                        0.7,
+                        0.8,
+                        0.9,
+                        1.0,
+                        1.05
+                      ],
+                      "labelOverlap": false
+                    },
+                    "scale": {
+                      "type": "pow",
+                      "exponent": 4,
+                      "domain": [
+                        0,
+                        1.07
+                      ],
+                      "nice": false
                     }
                   },
                   "size": {
@@ -650,9 +1385,9 @@
                         "APAC"
                       ],
                       "range": [
-                        "#14365d",
-                        "#2563a8",
-                        "#7fb2e5"
+                        "#4686fb",
+                        "#1ae4b6",
+                        "#faba39"
                       ]
                     }
                   },
@@ -688,12 +1423,13 @@
           },
           "datasources": [
             "ds-bubble"
-          ]
+          ],
+          "scope": "detail"
         },
         {
           "tile_id": "ask",
           "type": "text",
-          "text": "### Ask Revenue Advisor\nUse the chat box below this dashboard. Try:\n- *Why is EMEA Enterprise behind target in Q3 2026? Quantify the drivers.*\n- *Which accounts contributed most to the Q3 shortfall?*\n- *Will the renewal-delayed revenue recover in Q4?*\n- *How much of the gap is associated with discounts and refunds?*\n\nDrivers come from the `RECORDED_DRIVER` field logged by sales ops. They are recorded reasons, not inferred causes."
+          "text": "### Ask Revenue Advisor\nOnce published to CoWork, use the chat box below this dashboard. Try:\n- *Why is EMEA Enterprise behind target in Q3 2026? Quantify the drivers.*\n- *Which accounts contributed most to the Q3 shortfall?*\n- *Will the renewal-delayed revenue recover in Q4?*\n- *How much of the gap is associated with discounts and refunds?*\n\nDrivers come from the `RECORDED_DRIVER` field logged by sales ops. They are recorded reasons, not inferred causes."
         },
         {
           "tile_id": "accounts",
@@ -741,7 +1477,8 @@
           },
           "datasources": [
             "ds-accounts"
-          ]
+          ],
+          "scope": "detail"
         }
       ]
     }
@@ -785,7 +1522,43 @@
         "table": "REVENUE_PULSE_DB.DASHBOARD_DEMO.PRODUCTS",
         "column": "PRODUCT_NAME"
       }
+    },
+    "BRUSH_MONTH": {
+      "label": "Months picked on trend",
+      "mode": "range",
+      "valueType": "DATE",
+      "default_values": []
+    },
+    "DRILL_REGION": {
+      "label": "Drill: region path",
+      "mode": "single_select",
+      "valueType": "STRING",
+      "default_values": [],
+      "options": {
+        "source": "column",
+        "table": "REVENUE_PULSE_DB.DASHBOARD_DEMO.CUSTOMERS",
+        "column": "REGION"
+      }
+    },
+    "DRILL_DRIVER": {
+      "label": "Drill: driver path",
+      "mode": "single_select",
+      "valueType": "STRING",
+      "default_values": [],
+      "options": {
+        "source": "column",
+        "table": "REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_MONTHLY",
+        "column": "RECORDED_DRIVER"
+      }
     }
+  },
+  "scopes": {
+    "main": {},
+    "detail": {
+      "parent": "main"
+    },
+    "heat": {},
+    "region": {}
   },
   "layout": {
     "default": {
@@ -887,7 +1660,7 @@
           "type": "NUMBER"
         }
       ],
-      "sql": "WITH cur AS (\n    SELECT SUM(NET_REVENUE) AS NET, SUM(REVENUE_TARGET) AS TGT, SUM(GROSS_PROFIT) AS GP FROM (SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds))\n    WHERE {{ filter('MONTH') }}\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n),\npy AS (\n    SELECT SUM(NET_REVENUE) AS NET, SUM(REVENUE_TARGET) AS TGT, SUM(GROSS_PROFIT) AS GP FROM (SELECT DATEADD(YEAR, 1, MONTH) AS MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds))\n    WHERE {{ filter('MONTH') }}\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n)\nSELECT cur.NET AS CURRENT_VALUE, py.NET AS PRIOR_VALUE\nFROM cur CROSS JOIN py",
+      "sql": "WITH cur AS (\n    SELECT SUM(NET_REVENUE) AS NET, SUM(REVENUE_TARGET) AS TGT, SUM(GROSS_PROFIT) AS GP FROM (SELECT *, REGION AS DRILL_REGION_1, REGION || ' \u203a ' || SEGMENT AS DRILL_REGION_2, REGION || ' \u203a ' || SEGMENT || ' \u203a ' || CUSTOMER_NAME AS DRILL_REGION_3, RECORDED_DRIVER AS DRILL_DRIVER_1, RECORDED_DRIVER || ' \u203a ' || CUSTOMER_NAME AS DRILL_DRIVER_2 FROM (\n    SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name, revenue.recorded_driver, customers.customer_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds)))\n    WHERE ({{ filter('MONTH') }} OR EXISTS (SELECT 1 FROM (SELECT DATE '1900-01-01' AS MONTH) WHERE NOT ({{ filter('BRUSH_MONTH', 'MONTH') }})))\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n    AND {{ filter('BRUSH_MONTH', 'MONTH') }}\n    AND ({{ filter('DRILL_REGION', 'DRILL_REGION_1') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_2') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_3') }})\n    AND ({{ filter('DRILL_DRIVER', 'DRILL_DRIVER_1') }} OR {{ filter('DRILL_DRIVER', 'DRILL_DRIVER_2') }})\n),\npy AS (\n    SELECT SUM(NET_REVENUE) AS NET, SUM(REVENUE_TARGET) AS TGT, SUM(GROSS_PROFIT) AS GP FROM (SELECT *, REGION AS DRILL_REGION_1, REGION || ' \u203a ' || SEGMENT AS DRILL_REGION_2, REGION || ' \u203a ' || SEGMENT || ' \u203a ' || CUSTOMER_NAME AS DRILL_REGION_3, RECORDED_DRIVER AS DRILL_DRIVER_1, RECORDED_DRIVER || ' \u203a ' || CUSTOMER_NAME AS DRILL_DRIVER_2 FROM (\n    SELECT DATEADD(YEAR, 1, MONTH) AS MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name, revenue.recorded_driver, customers.customer_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds)))\n    WHERE ({{ filter('MONTH') }} OR EXISTS (SELECT 1 FROM (SELECT DATE '1900-01-01' AS MONTH) WHERE NOT ({{ filter('BRUSH_MONTH', 'MONTH') }})))\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n    AND {{ filter('BRUSH_MONTH', 'MONTH') }}\n    AND ({{ filter('DRILL_REGION', 'DRILL_REGION_1') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_2') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_3') }})\n    AND ({{ filter('DRILL_DRIVER', 'DRILL_DRIVER_1') }} OR {{ filter('DRILL_DRIVER', 'DRILL_DRIVER_2') }})\n)\nSELECT cur.NET AS CURRENT_VALUE, py.NET AS PRIOR_VALUE\nFROM cur CROSS JOIN py",
       "filter_bindings": [
         {
           "filter_id": "MONTH"
@@ -900,6 +1673,15 @@
         },
         {
           "filter_id": "PRODUCT_NAME"
+        },
+        {
+          "filter_id": "BRUSH_MONTH"
+        },
+        {
+          "filter_id": "DRILL_REGION"
+        },
+        {
+          "filter_id": "DRILL_DRIVER"
         }
       ]
     },
@@ -915,7 +1697,7 @@
           "type": "NUMBER"
         }
       ],
-      "sql": "WITH cur AS (\n    SELECT SUM(NET_REVENUE) AS NET, SUM(REVENUE_TARGET) AS TGT, SUM(GROSS_PROFIT) AS GP FROM (SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds))\n    WHERE {{ filter('MONTH') }}\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n),\npy AS (\n    SELECT SUM(NET_REVENUE) AS NET, SUM(REVENUE_TARGET) AS TGT, SUM(GROSS_PROFIT) AS GP FROM (SELECT DATEADD(YEAR, 1, MONTH) AS MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds))\n    WHERE {{ filter('MONTH') }}\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n)\nSELECT 100 * DIV0NULL(cur.NET, cur.TGT) AS CURRENT_VALUE, 100 * DIV0NULL(py.NET, py.TGT) AS PRIOR_VALUE\nFROM cur CROSS JOIN py",
+      "sql": "WITH cur AS (\n    SELECT SUM(NET_REVENUE) AS NET, SUM(REVENUE_TARGET) AS TGT, SUM(GROSS_PROFIT) AS GP FROM (SELECT *, REGION AS DRILL_REGION_1, REGION || ' \u203a ' || SEGMENT AS DRILL_REGION_2, REGION || ' \u203a ' || SEGMENT || ' \u203a ' || CUSTOMER_NAME AS DRILL_REGION_3, RECORDED_DRIVER AS DRILL_DRIVER_1, RECORDED_DRIVER || ' \u203a ' || CUSTOMER_NAME AS DRILL_DRIVER_2 FROM (\n    SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name, revenue.recorded_driver, customers.customer_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds)))\n    WHERE ({{ filter('MONTH') }} OR EXISTS (SELECT 1 FROM (SELECT DATE '1900-01-01' AS MONTH) WHERE NOT ({{ filter('BRUSH_MONTH', 'MONTH') }})))\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n    AND {{ filter('BRUSH_MONTH', 'MONTH') }}\n    AND ({{ filter('DRILL_REGION', 'DRILL_REGION_1') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_2') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_3') }})\n    AND ({{ filter('DRILL_DRIVER', 'DRILL_DRIVER_1') }} OR {{ filter('DRILL_DRIVER', 'DRILL_DRIVER_2') }})\n),\npy AS (\n    SELECT SUM(NET_REVENUE) AS NET, SUM(REVENUE_TARGET) AS TGT, SUM(GROSS_PROFIT) AS GP FROM (SELECT *, REGION AS DRILL_REGION_1, REGION || ' \u203a ' || SEGMENT AS DRILL_REGION_2, REGION || ' \u203a ' || SEGMENT || ' \u203a ' || CUSTOMER_NAME AS DRILL_REGION_3, RECORDED_DRIVER AS DRILL_DRIVER_1, RECORDED_DRIVER || ' \u203a ' || CUSTOMER_NAME AS DRILL_DRIVER_2 FROM (\n    SELECT DATEADD(YEAR, 1, MONTH) AS MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name, revenue.recorded_driver, customers.customer_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds)))\n    WHERE ({{ filter('MONTH') }} OR EXISTS (SELECT 1 FROM (SELECT DATE '1900-01-01' AS MONTH) WHERE NOT ({{ filter('BRUSH_MONTH', 'MONTH') }})))\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n    AND {{ filter('BRUSH_MONTH', 'MONTH') }}\n    AND ({{ filter('DRILL_REGION', 'DRILL_REGION_1') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_2') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_3') }})\n    AND ({{ filter('DRILL_DRIVER', 'DRILL_DRIVER_1') }} OR {{ filter('DRILL_DRIVER', 'DRILL_DRIVER_2') }})\n)\nSELECT 100 * DIV0NULL(cur.NET, cur.TGT) AS CURRENT_VALUE, 100 * DIV0NULL(py.NET, py.TGT) AS PRIOR_VALUE\nFROM cur CROSS JOIN py",
       "filter_bindings": [
         {
           "filter_id": "MONTH"
@@ -928,6 +1710,15 @@
         },
         {
           "filter_id": "PRODUCT_NAME"
+        },
+        {
+          "filter_id": "BRUSH_MONTH"
+        },
+        {
+          "filter_id": "DRILL_REGION"
+        },
+        {
+          "filter_id": "DRILL_DRIVER"
         }
       ]
     },
@@ -943,7 +1734,7 @@
           "type": "NUMBER"
         }
       ],
-      "sql": "WITH cur AS (\n    SELECT SUM(NET_REVENUE) AS NET, SUM(REVENUE_TARGET) AS TGT, SUM(GROSS_PROFIT) AS GP FROM (SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds))\n    WHERE {{ filter('MONTH') }}\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n),\npy AS (\n    SELECT SUM(NET_REVENUE) AS NET, SUM(REVENUE_TARGET) AS TGT, SUM(GROSS_PROFIT) AS GP FROM (SELECT DATEADD(YEAR, 1, MONTH) AS MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds))\n    WHERE {{ filter('MONTH') }}\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n)\nSELECT cur.NET - cur.TGT AS CURRENT_VALUE, py.NET - py.TGT AS PRIOR_VALUE\nFROM cur CROSS JOIN py",
+      "sql": "WITH cur AS (\n    SELECT SUM(NET_REVENUE) AS NET, SUM(REVENUE_TARGET) AS TGT, SUM(GROSS_PROFIT) AS GP FROM (SELECT *, REGION AS DRILL_REGION_1, REGION || ' \u203a ' || SEGMENT AS DRILL_REGION_2, REGION || ' \u203a ' || SEGMENT || ' \u203a ' || CUSTOMER_NAME AS DRILL_REGION_3, RECORDED_DRIVER AS DRILL_DRIVER_1, RECORDED_DRIVER || ' \u203a ' || CUSTOMER_NAME AS DRILL_DRIVER_2 FROM (\n    SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name, revenue.recorded_driver, customers.customer_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds)))\n    WHERE ({{ filter('MONTH') }} OR EXISTS (SELECT 1 FROM (SELECT DATE '1900-01-01' AS MONTH) WHERE NOT ({{ filter('BRUSH_MONTH', 'MONTH') }})))\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n    AND {{ filter('BRUSH_MONTH', 'MONTH') }}\n    AND ({{ filter('DRILL_REGION', 'DRILL_REGION_1') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_2') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_3') }})\n    AND ({{ filter('DRILL_DRIVER', 'DRILL_DRIVER_1') }} OR {{ filter('DRILL_DRIVER', 'DRILL_DRIVER_2') }})\n),\npy AS (\n    SELECT SUM(NET_REVENUE) AS NET, SUM(REVENUE_TARGET) AS TGT, SUM(GROSS_PROFIT) AS GP FROM (SELECT *, REGION AS DRILL_REGION_1, REGION || ' \u203a ' || SEGMENT AS DRILL_REGION_2, REGION || ' \u203a ' || SEGMENT || ' \u203a ' || CUSTOMER_NAME AS DRILL_REGION_3, RECORDED_DRIVER AS DRILL_DRIVER_1, RECORDED_DRIVER || ' \u203a ' || CUSTOMER_NAME AS DRILL_DRIVER_2 FROM (\n    SELECT DATEADD(YEAR, 1, MONTH) AS MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name, revenue.recorded_driver, customers.customer_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds)))\n    WHERE ({{ filter('MONTH') }} OR EXISTS (SELECT 1 FROM (SELECT DATE '1900-01-01' AS MONTH) WHERE NOT ({{ filter('BRUSH_MONTH', 'MONTH') }})))\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n    AND {{ filter('BRUSH_MONTH', 'MONTH') }}\n    AND ({{ filter('DRILL_REGION', 'DRILL_REGION_1') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_2') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_3') }})\n    AND ({{ filter('DRILL_DRIVER', 'DRILL_DRIVER_1') }} OR {{ filter('DRILL_DRIVER', 'DRILL_DRIVER_2') }})\n)\nSELECT cur.NET - cur.TGT AS CURRENT_VALUE, py.NET - py.TGT AS PRIOR_VALUE\nFROM cur CROSS JOIN py",
       "filter_bindings": [
         {
           "filter_id": "MONTH"
@@ -956,6 +1747,15 @@
         },
         {
           "filter_id": "PRODUCT_NAME"
+        },
+        {
+          "filter_id": "BRUSH_MONTH"
+        },
+        {
+          "filter_id": "DRILL_REGION"
+        },
+        {
+          "filter_id": "DRILL_DRIVER"
         }
       ]
     },
@@ -971,7 +1771,7 @@
           "type": "NUMBER"
         }
       ],
-      "sql": "WITH cur AS (\n    SELECT SUM(NET_REVENUE) AS NET, SUM(REVENUE_TARGET) AS TGT, SUM(GROSS_PROFIT) AS GP FROM (SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds))\n    WHERE {{ filter('MONTH') }}\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n),\npy AS (\n    SELECT SUM(NET_REVENUE) AS NET, SUM(REVENUE_TARGET) AS TGT, SUM(GROSS_PROFIT) AS GP FROM (SELECT DATEADD(YEAR, 1, MONTH) AS MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds))\n    WHERE {{ filter('MONTH') }}\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n)\nSELECT 100 * DIV0NULL(cur.GP, cur.NET) AS CURRENT_VALUE, 100 * DIV0NULL(py.GP, py.NET) AS PRIOR_VALUE\nFROM cur CROSS JOIN py",
+      "sql": "WITH cur AS (\n    SELECT SUM(NET_REVENUE) AS NET, SUM(REVENUE_TARGET) AS TGT, SUM(GROSS_PROFIT) AS GP FROM (SELECT *, REGION AS DRILL_REGION_1, REGION || ' \u203a ' || SEGMENT AS DRILL_REGION_2, REGION || ' \u203a ' || SEGMENT || ' \u203a ' || CUSTOMER_NAME AS DRILL_REGION_3, RECORDED_DRIVER AS DRILL_DRIVER_1, RECORDED_DRIVER || ' \u203a ' || CUSTOMER_NAME AS DRILL_DRIVER_2 FROM (\n    SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name, revenue.recorded_driver, customers.customer_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds)))\n    WHERE ({{ filter('MONTH') }} OR EXISTS (SELECT 1 FROM (SELECT DATE '1900-01-01' AS MONTH) WHERE NOT ({{ filter('BRUSH_MONTH', 'MONTH') }})))\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n    AND {{ filter('BRUSH_MONTH', 'MONTH') }}\n    AND ({{ filter('DRILL_REGION', 'DRILL_REGION_1') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_2') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_3') }})\n    AND ({{ filter('DRILL_DRIVER', 'DRILL_DRIVER_1') }} OR {{ filter('DRILL_DRIVER', 'DRILL_DRIVER_2') }})\n),\npy AS (\n    SELECT SUM(NET_REVENUE) AS NET, SUM(REVENUE_TARGET) AS TGT, SUM(GROSS_PROFIT) AS GP FROM (SELECT *, REGION AS DRILL_REGION_1, REGION || ' \u203a ' || SEGMENT AS DRILL_REGION_2, REGION || ' \u203a ' || SEGMENT || ' \u203a ' || CUSTOMER_NAME AS DRILL_REGION_3, RECORDED_DRIVER AS DRILL_DRIVER_1, RECORDED_DRIVER || ' \u203a ' || CUSTOMER_NAME AS DRILL_DRIVER_2 FROM (\n    SELECT DATEADD(YEAR, 1, MONTH) AS MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name, revenue.recorded_driver, customers.customer_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds)))\n    WHERE ({{ filter('MONTH') }} OR EXISTS (SELECT 1 FROM (SELECT DATE '1900-01-01' AS MONTH) WHERE NOT ({{ filter('BRUSH_MONTH', 'MONTH') }})))\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n    AND {{ filter('BRUSH_MONTH', 'MONTH') }}\n    AND ({{ filter('DRILL_REGION', 'DRILL_REGION_1') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_2') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_3') }})\n    AND ({{ filter('DRILL_DRIVER', 'DRILL_DRIVER_1') }} OR {{ filter('DRILL_DRIVER', 'DRILL_DRIVER_2') }})\n)\nSELECT 100 * DIV0NULL(cur.GP, cur.NET) AS CURRENT_VALUE, 100 * DIV0NULL(py.GP, py.NET) AS PRIOR_VALUE\nFROM cur CROSS JOIN py",
       "filter_bindings": [
         {
           "filter_id": "MONTH"
@@ -984,6 +1784,15 @@
         },
         {
           "filter_id": "PRODUCT_NAME"
+        },
+        {
+          "filter_id": "BRUSH_MONTH"
+        },
+        {
+          "filter_id": "DRILL_REGION"
+        },
+        {
+          "filter_id": "DRILL_DRIVER"
         }
       ]
     },
@@ -1003,7 +1812,7 @@
           "type": "NUMBER"
         }
       ],
-      "sql": "SELECT MONTH, SUM(NET_REVENUE) AS NET_REVENUE, SUM(REVENUE_TARGET) AS REVENUE_TARGET\nFROM (SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds))\nWHERE {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\nGROUP BY MONTH\nORDER BY MONTH",
+      "sql": "SELECT MONTH, SUM(NET_REVENUE) AS NET_REVENUE, SUM(REVENUE_TARGET) AS REVENUE_TARGET\nFROM (SELECT *, REGION AS DRILL_REGION_1, REGION || ' \u203a ' || SEGMENT AS DRILL_REGION_2, REGION || ' \u203a ' || SEGMENT || ' \u203a ' || CUSTOMER_NAME AS DRILL_REGION_3, RECORDED_DRIVER AS DRILL_DRIVER_1, RECORDED_DRIVER || ' \u203a ' || CUSTOMER_NAME AS DRILL_DRIVER_2 FROM (\n    SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name, revenue.recorded_driver, customers.customer_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds)))\nWHERE {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n    AND {{ filter('BRUSH_MONTH', 'MONTH') }}\n    AND ({{ filter('DRILL_REGION', 'DRILL_REGION_1') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_2') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_3') }})\n    AND ({{ filter('DRILL_DRIVER', 'DRILL_DRIVER_1') }} OR {{ filter('DRILL_DRIVER', 'DRILL_DRIVER_2') }})\nGROUP BY MONTH\nORDER BY MONTH",
       "filter_bindings": [
         {
           "filter_id": "REGION"
@@ -1013,6 +1822,15 @@
         },
         {
           "filter_id": "PRODUCT_NAME"
+        },
+        {
+          "filter_id": "BRUSH_MONTH"
+        },
+        {
+          "filter_id": "DRILL_REGION"
+        },
+        {
+          "filter_id": "DRILL_DRIVER"
         }
       ]
     },
@@ -1020,7 +1838,11 @@
       "type": "sql",
       "columns": [
         {
-          "name": "REGION",
+          "name": "DRILL_REGION",
+          "type": "VARCHAR"
+        },
+        {
+          "name": "LEVEL",
           "type": "VARCHAR"
         },
         {
@@ -1040,7 +1862,7 @@
           "type": "NUMBER"
         }
       ],
-      "sql": "SELECT REGION, SUM(NET_REVENUE) AS NET_REVENUE, SUM(REVENUE_TARGET) AS REVENUE_TARGET,\n    SUM(NET_REVENUE) - SUM(REVENUE_TARGET) AS VARIANCE,\n    DIV0NULL(SUM(NET_REVENUE), SUM(REVENUE_TARGET)) AS ATTAINMENT\nFROM (SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds))\nWHERE {{ filter('MONTH') }}\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\nGROUP BY REGION\nORDER BY VARIANCE",
+      "sql": "WITH f AS (\n    SELECT * FROM (SELECT *, REGION AS DRILL_REGION_1, REGION || ' \u203a ' || SEGMENT AS DRILL_REGION_2, REGION || ' \u203a ' || SEGMENT || ' \u203a ' || CUSTOMER_NAME AS DRILL_REGION_3, RECORDED_DRIVER AS DRILL_DRIVER_1, RECORDED_DRIVER || ' \u203a ' || CUSTOMER_NAME AS DRILL_DRIVER_2 FROM (\n    SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name, revenue.recorded_driver, customers.customer_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds)))\n    WHERE ({{ filter('MONTH') }} OR EXISTS (SELECT 1 FROM (SELECT DATE '1900-01-01' AS MONTH) WHERE NOT ({{ filter('BRUSH_MONTH', 'MONTH') }})))\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n    AND {{ filter('BRUSH_MONTH', 'MONTH') }}\n    AND ({{ filter('DRILL_REGION', 'DRILL_REGION_1') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_2') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_3') }})\n    AND ({{ filter('DRILL_DRIVER', 'DRILL_DRIVER_1') }} OR {{ filter('DRILL_DRIVER', 'DRILL_DRIVER_2') }})\n),\nlvl AS (SELECT CASE WHEN NOT (EXISTS (SELECT 1 FROM (SELECT '\u00a7' AS DRILL_REGION_1, '\u00a7' AS DRILL_REGION_2, '\u00a7' AS DRILL_REGION_3) WHERE NOT ({{ filter('DRILL_REGION', 'DRILL_REGION_1') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_2') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_3') }})) OR EXISTS (SELECT 1 FROM (SELECT '\u00a7' AS REGION) WHERE NOT ({{ filter('REGION', 'REGION') }})) OR EXISTS (SELECT 1 FROM (SELECT '\u00a7' AS SEGMENT) WHERE NOT ({{ filter('SEGMENT', 'SEGMENT') }}))) THEN 1 WHEN COUNT(DISTINCT DRILL_REGION_1) > 1 THEN 1 WHEN COUNT(DISTINCT DRILL_REGION_2) > 1 THEN 2 ELSE 3 END AS L FROM f)\nSELECT CASE L WHEN 1 THEN DRILL_REGION_1 WHEN 2 THEN DRILL_REGION_2 WHEN 3 THEN DRILL_REGION_3 END AS DRILL_REGION, DECODE(L, 1, 'Region', 2, 'Segment', 3, 'Account') AS LEVEL,\n    SUM(NET_REVENUE) AS NET_REVENUE, SUM(REVENUE_TARGET) AS REVENUE_TARGET,\n    SUM(NET_REVENUE) - SUM(REVENUE_TARGET) AS VARIANCE,\n    DIV0NULL(SUM(NET_REVENUE), SUM(REVENUE_TARGET)) AS ATTAINMENT\nFROM f CROSS JOIN lvl\nGROUP BY 1, L\nORDER BY VARIANCE",
       "filter_bindings": [
         {
           "filter_id": "MONTH"
@@ -1053,6 +1875,15 @@
         },
         {
           "filter_id": "PRODUCT_NAME"
+        },
+        {
+          "filter_id": "BRUSH_MONTH"
+        },
+        {
+          "filter_id": "DRILL_REGION"
+        },
+        {
+          "filter_id": "DRILL_DRIVER"
         }
       ]
     },
@@ -1076,7 +1907,7 @@
           "type": "NUMBER"
         }
       ],
-      "sql": "SELECT REGION, SEGMENT, DIV0NULL(SUM(NET_REVENUE), SUM(REVENUE_TARGET)) AS ATTAINMENT,\n    SUM(NET_REVENUE) - SUM(REVENUE_TARGET) AS VARIANCE\nFROM (SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds))\nWHERE {{ filter('MONTH') }}\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\nGROUP BY REGION, SEGMENT",
+      "sql": "SELECT REGION, SEGMENT, DIV0NULL(SUM(NET_REVENUE), SUM(REVENUE_TARGET)) AS ATTAINMENT,\n    SUM(NET_REVENUE) - SUM(REVENUE_TARGET) AS VARIANCE\nFROM (SELECT *, REGION AS DRILL_REGION_1, REGION || ' \u203a ' || SEGMENT AS DRILL_REGION_2, REGION || ' \u203a ' || SEGMENT || ' \u203a ' || CUSTOMER_NAME AS DRILL_REGION_3, RECORDED_DRIVER AS DRILL_DRIVER_1, RECORDED_DRIVER || ' \u203a ' || CUSTOMER_NAME AS DRILL_DRIVER_2 FROM (\n    SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name, revenue.recorded_driver, customers.customer_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds)))\nWHERE ({{ filter('MONTH') }} OR EXISTS (SELECT 1 FROM (SELECT DATE '1900-01-01' AS MONTH) WHERE NOT ({{ filter('BRUSH_MONTH', 'MONTH') }})))\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n    AND {{ filter('BRUSH_MONTH', 'MONTH') }}\n    AND ({{ filter('DRILL_REGION', 'DRILL_REGION_1') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_2') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_3') }})\n    AND ({{ filter('DRILL_DRIVER', 'DRILL_DRIVER_1') }} OR {{ filter('DRILL_DRIVER', 'DRILL_DRIVER_2') }})\nGROUP BY REGION, SEGMENT",
       "filter_bindings": [
         {
           "filter_id": "MONTH"
@@ -1089,6 +1920,15 @@
         },
         {
           "filter_id": "PRODUCT_NAME"
+        },
+        {
+          "filter_id": "BRUSH_MONTH"
+        },
+        {
+          "filter_id": "DRILL_REGION"
+        },
+        {
+          "filter_id": "DRILL_DRIVER"
         }
       ]
     },
@@ -1096,7 +1936,11 @@
       "type": "sql",
       "columns": [
         {
-          "name": "RECORDED_DRIVER",
+          "name": "DRILL_DRIVER",
+          "type": "VARCHAR"
+        },
+        {
+          "name": "LEVEL",
           "type": "VARCHAR"
         },
         {
@@ -1116,7 +1960,7 @@
           "type": "NUMBER"
         }
       ],
-      "sql": "SELECT RECORDED_DRIVER, SUM(NET_REVENUE) - SUM(REVENUE_TARGET) AS VARIANCE,\n    SUM(TOTAL_DISCOUNTS) AS DISCOUNTS, SUM(TOTAL_REFUNDS) AS REFUNDS, COUNT(DISTINCT CUSTOMER_NAME) AS ACCOUNTS\nFROM (SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name, revenue.recorded_driver, customers.customer_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds))\nWHERE {{ filter('MONTH') }}\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\nGROUP BY RECORDED_DRIVER\nORDER BY VARIANCE",
+      "sql": "WITH f AS (\n    SELECT * FROM (SELECT *, REGION AS DRILL_REGION_1, REGION || ' \u203a ' || SEGMENT AS DRILL_REGION_2, REGION || ' \u203a ' || SEGMENT || ' \u203a ' || CUSTOMER_NAME AS DRILL_REGION_3, RECORDED_DRIVER AS DRILL_DRIVER_1, RECORDED_DRIVER || ' \u203a ' || CUSTOMER_NAME AS DRILL_DRIVER_2 FROM (\n    SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name, revenue.recorded_driver, customers.customer_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds)))\n    WHERE ({{ filter('MONTH') }} OR EXISTS (SELECT 1 FROM (SELECT DATE '1900-01-01' AS MONTH) WHERE NOT ({{ filter('BRUSH_MONTH', 'MONTH') }})))\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n    AND {{ filter('BRUSH_MONTH', 'MONTH') }}\n    AND ({{ filter('DRILL_REGION', 'DRILL_REGION_1') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_2') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_3') }})\n    AND ({{ filter('DRILL_DRIVER', 'DRILL_DRIVER_1') }} OR {{ filter('DRILL_DRIVER', 'DRILL_DRIVER_2') }})\n),\nlvl AS (SELECT CASE WHEN NOT (EXISTS (SELECT 1 FROM (SELECT '\u00a7' AS DRILL_DRIVER_1, '\u00a7' AS DRILL_DRIVER_2) WHERE NOT ({{ filter('DRILL_DRIVER', 'DRILL_DRIVER_1') }} OR {{ filter('DRILL_DRIVER', 'DRILL_DRIVER_2') }}))) THEN 1 WHEN COUNT(DISTINCT DRILL_DRIVER_1) > 1 THEN 1 ELSE 2 END AS L FROM f)\nSELECT CASE L WHEN 1 THEN DRILL_DRIVER_1 WHEN 2 THEN DRILL_DRIVER_2 END AS DRILL_DRIVER, DECODE(L, 1, 'Driver', 2, 'Account') AS LEVEL,\n    SUM(NET_REVENUE) - SUM(REVENUE_TARGET) AS VARIANCE,\n    SUM(TOTAL_DISCOUNTS) AS DISCOUNTS, SUM(TOTAL_REFUNDS) AS REFUNDS, COUNT(DISTINCT CUSTOMER_NAME) AS ACCOUNTS\nFROM f CROSS JOIN lvl\nGROUP BY 1, L\nORDER BY VARIANCE",
       "filter_bindings": [
         {
           "filter_id": "MONTH"
@@ -1129,6 +1973,15 @@
         },
         {
           "filter_id": "PRODUCT_NAME"
+        },
+        {
+          "filter_id": "BRUSH_MONTH"
+        },
+        {
+          "filter_id": "DRILL_REGION"
+        },
+        {
+          "filter_id": "DRILL_DRIVER"
         }
       ]
     },
@@ -1162,9 +2015,13 @@
         {
           "name": "LABEL_Y",
           "type": "NUMBER"
+        },
+        {
+          "name": "NEXT_STEP",
+          "type": "VARCHAR"
         }
       ],
-      "sql": "WITH d AS (\n    SELECT RECORDED_DRIVER, SUM(NET_REVENUE) - SUM(REVENUE_TARGET) AS V\n    FROM (SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name, revenue.recorded_driver\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds))\n    WHERE {{ filter('MONTH') }}\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n    GROUP BY RECORDED_DRIVER\n),\nsteps AS (\n    SELECT ROW_NUMBER() OVER (ORDER BY V DESC) AS STEP_ORDER,\n        DECODE(RECORDED_DRIVER, 'NORMAL_TRADING', 'Normal trading', 'RECORDED_RENEWAL_DELAY', 'Renewal delay',\n            'RECORDED_CONTRACT_DOWNSIZE', 'Contract downsize', 'RECORDED_DISCOUNT_AND_SERVICE_CREDIT', 'Discounts & credits',\n            RECORDED_DRIVER) AS STEP,\n        IFF(V < 0, 'Decrease', 'Increase') AS KIND,\n        COALESCE(SUM(V) OVER (ORDER BY V DESC ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING), 0) AS START_VALUE,\n        SUM(V) OVER (ORDER BY V DESC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS END_VALUE,\n        V AS AMOUNT\n    FROM d\n    UNION ALL\n    SELECT 99, 'Total variance', 'Total', 0, SUM(V), SUM(V) FROM d\n)\nSELECT STEP_ORDER, STEP, KIND, START_VALUE, END_VALUE, AMOUNT, GREATEST(START_VALUE, END_VALUE) AS LABEL_Y\nFROM steps\nORDER BY STEP_ORDER",
+      "sql": "WITH d AS (\n    SELECT RECORDED_DRIVER, SUM(NET_REVENUE) - SUM(REVENUE_TARGET) AS V\n    FROM (SELECT *, REGION AS DRILL_REGION_1, REGION || ' \u203a ' || SEGMENT AS DRILL_REGION_2, REGION || ' \u203a ' || SEGMENT || ' \u203a ' || CUSTOMER_NAME AS DRILL_REGION_3, RECORDED_DRIVER AS DRILL_DRIVER_1, RECORDED_DRIVER || ' \u203a ' || CUSTOMER_NAME AS DRILL_DRIVER_2 FROM (\n    SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name, revenue.recorded_driver, customers.customer_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds)))\n    WHERE ({{ filter('MONTH') }} OR EXISTS (SELECT 1 FROM (SELECT DATE '1900-01-01' AS MONTH) WHERE NOT ({{ filter('BRUSH_MONTH', 'MONTH') }})))\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n    AND {{ filter('BRUSH_MONTH', 'MONTH') }}\n    AND ({{ filter('DRILL_REGION', 'DRILL_REGION_1') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_2') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_3') }})\n    AND ({{ filter('DRILL_DRIVER', 'DRILL_DRIVER_1') }} OR {{ filter('DRILL_DRIVER', 'DRILL_DRIVER_2') }})\n    GROUP BY RECORDED_DRIVER\n),\nsteps AS (\n    SELECT ROW_NUMBER() OVER (ORDER BY V DESC) AS STEP_ORDER,\n        DECODE(RECORDED_DRIVER, 'NORMAL_TRADING', 'Normal trading', 'RECORDED_RENEWAL_DELAY', 'Renewal delay',\n            'RECORDED_CONTRACT_DOWNSIZE', 'Contract downsize', 'RECORDED_DISCOUNT_AND_SERVICE_CREDIT', 'Discounts & credits',\n            RECORDED_DRIVER) AS STEP,\n        IFF(V < 0, 'Decrease', 'Increase') AS KIND,\n        COALESCE(SUM(V) OVER (ORDER BY V DESC ROWS BETWEEN UNBOUNDED PRECEDING AND 1 PRECEDING), 0) AS START_VALUE,\n        SUM(V) OVER (ORDER BY V DESC ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS END_VALUE,\n        V AS AMOUNT\n    FROM d\n    UNION ALL\n    SELECT 99, 'Total variance', 'Total', 0, SUM(V), SUM(V) FROM d\n)\nSELECT STEP_ORDER, STEP, KIND, START_VALUE, END_VALUE, AMOUNT,\n    IFF(AMOUNT < 0, LEAST(START_VALUE, END_VALUE), GREATEST(START_VALUE, END_VALUE)) AS LABEL_Y,\n    LEAD(STEP) OVER (ORDER BY STEP_ORDER) AS NEXT_STEP\nFROM steps\nORDER BY STEP_ORDER",
       "filter_bindings": [
         {
           "filter_id": "MONTH"
@@ -1177,6 +2034,15 @@
         },
         {
           "filter_id": "PRODUCT_NAME"
+        },
+        {
+          "filter_id": "BRUSH_MONTH"
+        },
+        {
+          "filter_id": "DRILL_REGION"
+        },
+        {
+          "filter_id": "DRILL_DRIVER"
         }
       ]
     },
@@ -1208,7 +2074,7 @@
           "type": "NUMBER"
         }
       ],
-      "sql": "SELECT CUSTOMER_NAME, REGION, SEGMENT, SUM(NET_REVENUE) AS NET_REVENUE,\n    SUM(REVENUE_TARGET) AS REVENUE_TARGET,\n    DIV0NULL(SUM(NET_REVENUE), SUM(REVENUE_TARGET)) AS ATTAINMENT\nFROM (SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name, customers.customer_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds))\nWHERE {{ filter('MONTH') }}\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\nGROUP BY CUSTOMER_NAME, REGION, SEGMENT",
+      "sql": "SELECT CUSTOMER_NAME, REGION, SEGMENT, SUM(NET_REVENUE) AS NET_REVENUE,\n    SUM(REVENUE_TARGET) AS REVENUE_TARGET,\n    DIV0NULL(SUM(NET_REVENUE), SUM(REVENUE_TARGET)) AS ATTAINMENT\nFROM (SELECT *, REGION AS DRILL_REGION_1, REGION || ' \u203a ' || SEGMENT AS DRILL_REGION_2, REGION || ' \u203a ' || SEGMENT || ' \u203a ' || CUSTOMER_NAME AS DRILL_REGION_3, RECORDED_DRIVER AS DRILL_DRIVER_1, RECORDED_DRIVER || ' \u203a ' || CUSTOMER_NAME AS DRILL_DRIVER_2 FROM (\n    SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name, revenue.recorded_driver, customers.customer_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds)))\nWHERE ({{ filter('MONTH') }} OR EXISTS (SELECT 1 FROM (SELECT DATE '1900-01-01' AS MONTH) WHERE NOT ({{ filter('BRUSH_MONTH', 'MONTH') }})))\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n    AND {{ filter('BRUSH_MONTH', 'MONTH') }}\n    AND ({{ filter('DRILL_REGION', 'DRILL_REGION_1') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_2') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_3') }})\n    AND ({{ filter('DRILL_DRIVER', 'DRILL_DRIVER_1') }} OR {{ filter('DRILL_DRIVER', 'DRILL_DRIVER_2') }})\nGROUP BY CUSTOMER_NAME, REGION, SEGMENT",
       "filter_bindings": [
         {
           "filter_id": "MONTH"
@@ -1221,6 +2087,15 @@
         },
         {
           "filter_id": "PRODUCT_NAME"
+        },
+        {
+          "filter_id": "BRUSH_MONTH"
+        },
+        {
+          "filter_id": "DRILL_REGION"
+        },
+        {
+          "filter_id": "DRILL_DRIVER"
         }
       ]
     },
@@ -1264,7 +2139,7 @@
           "type": "VARCHAR"
         }
       ],
-      "sql": "SELECT CUSTOMER_NAME, REGION, SEGMENT, ROUND(SUM(NET_REVENUE), 0) AS NET_REVENUE,\n    ROUND(SUM(REVENUE_TARGET), 0) AS REVENUE_TARGET,\n    ROUND(SUM(NET_REVENUE) - SUM(REVENUE_TARGET), 0) AS VARIANCE,\n    ROUND(100 * DIV0NULL(SUM(NET_REVENUE), SUM(REVENUE_TARGET)), 1) AS ATTAINMENT_PCT,\n    ROUND(100 * DIV0NULL(SUM(GROSS_PROFIT), SUM(NET_REVENUE)), 1) AS GROSS_MARGIN_PCT,\n    MAX_BY(RECORDED_DRIVER, ABS(REVENUE_TARGET - NET_REVENUE)) AS TOP_DRIVER\nFROM (SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name, revenue.recorded_driver, customers.customer_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds))\nWHERE {{ filter('MONTH') }}\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\nGROUP BY CUSTOMER_NAME, REGION, SEGMENT\nORDER BY VARIANCE\nLIMIT 100",
+      "sql": "SELECT CUSTOMER_NAME, REGION, SEGMENT, ROUND(SUM(NET_REVENUE), 0) AS NET_REVENUE,\n    ROUND(SUM(REVENUE_TARGET), 0) AS REVENUE_TARGET,\n    ROUND(SUM(NET_REVENUE) - SUM(REVENUE_TARGET), 0) AS VARIANCE,\n    ROUND(100 * DIV0NULL(SUM(NET_REVENUE), SUM(REVENUE_TARGET)), 1) AS ATTAINMENT_PCT,\n    ROUND(100 * DIV0NULL(SUM(GROSS_PROFIT), SUM(NET_REVENUE)), 1) AS GROSS_MARGIN_PCT,\n    MAX_BY(RECORDED_DRIVER, ABS(REVENUE_TARGET - NET_REVENUE)) AS TOP_DRIVER\nFROM (SELECT *, REGION AS DRILL_REGION_1, REGION || ' \u203a ' || SEGMENT AS DRILL_REGION_2, REGION || ' \u203a ' || SEGMENT || ' \u203a ' || CUSTOMER_NAME AS DRILL_REGION_3, RECORDED_DRIVER AS DRILL_DRIVER_1, RECORDED_DRIVER || ' \u203a ' || CUSTOMER_NAME AS DRILL_DRIVER_2 FROM (\n    SELECT MONTH, * EXCLUDE (MONTH) FROM SEMANTIC_VIEW(\n        REVENUE_PULSE_DB.DASHBOARD_DEMO.REVENUE_SEMANTIC_VIEW\n        DIMENSIONS revenue.month, customers.region, customers.segment, products.product_name, revenue.recorded_driver, customers.customer_name\n        METRICS revenue.net_revenue, revenue.revenue_target, revenue.gross_profit, revenue.total_discounts, revenue.total_refunds)))\nWHERE ({{ filter('MONTH') }} OR EXISTS (SELECT 1 FROM (SELECT DATE '1900-01-01' AS MONTH) WHERE NOT ({{ filter('BRUSH_MONTH', 'MONTH') }})))\n    AND {{ filter('REGION') }}\n    AND {{ filter('SEGMENT') }}\n    AND {{ filter('PRODUCT_NAME') }}\n    AND {{ filter('BRUSH_MONTH', 'MONTH') }}\n    AND ({{ filter('DRILL_REGION', 'DRILL_REGION_1') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_2') }} OR {{ filter('DRILL_REGION', 'DRILL_REGION_3') }})\n    AND ({{ filter('DRILL_DRIVER', 'DRILL_DRIVER_1') }} OR {{ filter('DRILL_DRIVER', 'DRILL_DRIVER_2') }})\nGROUP BY CUSTOMER_NAME, REGION, SEGMENT\nORDER BY VARIANCE\nLIMIT 100",
       "filter_bindings": [
         {
           "filter_id": "MONTH"
@@ -1277,6 +2152,15 @@
         },
         {
           "filter_id": "PRODUCT_NAME"
+        },
+        {
+          "filter_id": "BRUSH_MONTH"
+        },
+        {
+          "filter_id": "DRILL_REGION"
+        },
+        {
+          "filter_id": "DRILL_DRIVER"
         }
       ]
     }

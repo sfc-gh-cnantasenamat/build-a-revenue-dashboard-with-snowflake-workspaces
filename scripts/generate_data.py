@@ -63,6 +63,33 @@ def generate(config):
                             elif customer_index == 4:
                                 gross = discount = refund = 0
                                 reason = "RECORDED_RENEWAL_DELAY"
+                        elif offset >= config["months"] - 3:
+                            # Milder versions of the same drivers in every other slice, so each one
+                            # shows all four; EMEA Enterprise stays by far the largest miss.
+                            if customer_index == 0:
+                                gross = target * 100 // 100
+                                discount = gross * 3 // 100
+                                refund = gross // 200
+                                reason = "RECORDED_CONTRACT_DOWNSIZE"
+                            elif customer_index == 1:
+                                discount = gross * 5 // 100
+                                refund = gross * 1 // 100
+                                reason = "RECORDED_DISCOUNT_AND_SERVICE_CREDIT"
+                            elif customer_index == 2 and product_id == "P03" and offset == config["months"] - 1:
+                                gross = discount = refund = 0
+                                reason = "RECORDED_RENEWAL_DELAY"
+                            elif region != "EMEA":
+                                # Mixed Q3 outside EMEA: Americas Enterprise beats target; the other segments
+                                # miss by 12-35 points, each with a recorded driver.
+                                factor, recorded = {
+                                    ('Americas', 'Enterprise'): (1231, None),
+                                    ('Americas', 'Mid-market'): (692, 'RECORDED_DISCOUNT_AND_SERVICE_CREDIT'),
+                                    ('Americas', 'SMB'): (783, 'RECORDED_CONTRACT_DOWNSIZE'),
+                                    ('APAC', 'Enterprise'): (827, 'RECORDED_CONTRACT_DOWNSIZE'),
+                                    ('APAC', 'Mid-market'): (588, 'RECORDED_CONTRACT_DOWNSIZE'),
+                                    ('APAC', 'SMB'): (498, 'RECORDED_DISCOUNT_AND_SERVICE_CREDIT')}[(region, segment)]
+                                gross = gross * factor // 1000
+                                reason = recorded or reason
                         net = gross - discount - refund
                         cost = net * (25 + region_index * 2 + rng.randrange(0, 5)) // 100
                         facts.append({"revenue_id": f"{customer_id}-{product_id}-{month:%Y%m}",

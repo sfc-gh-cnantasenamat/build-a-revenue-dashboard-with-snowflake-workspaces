@@ -48,7 +48,7 @@ class RevenueDataTests(unittest.TestCase):
 
     def test_target_only_periods_retained(self):
         delayed = [row for row in self.facts if row["recorded_driver"] == "RECORDED_RENEWAL_DELAY"]
-        self.assertEqual(len(delayed), 9)
+        self.assertEqual(len(delayed), 17)
         self.assertTrue(all(row["gross_revenue_cents"] == 0 and row["target_cents"] > 0 for row in delayed))
 
     def test_empty_and_weighted_ratios(self):

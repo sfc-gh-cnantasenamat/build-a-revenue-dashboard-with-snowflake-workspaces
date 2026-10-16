@@ -12,16 +12,16 @@ Show `REVENUE_SEMANTIC_VIEW` in the catalog briefly: metrics like net revenue, t
 
 Open `dashboards/revenue_pulse.dash` in the Git-synced workspace.
 
-- The KPI row reads: net revenue **$7.4M**, up 7.9% on last year, but attainment is only **92.4%**, which is **$603.6K behind target**.
+- The KPI row reads: net revenue **$6.9M**, barely up (0.8%) on last year, and attainment is only **86.3%**, which is **$1.09M behind target**.
 - Trend: revenue tracked target for 21 months, then fell below it in July.
-- Region bar and heatmap: one red cell. **EMEA Enterprise is at 58%**; every other cell is at or above 100%.
+- Region bar and heatmap: **EMEA Enterprise is at 58%**, the worst cell. APAC is behind in every segment (65–88%); the Americas is ahead only because Enterprise is at 117%.
 - Drivers chart: what sales ops recorded. Renewal delay is the largest, then contract downsizes, then discounts and credits.
 
 "Every tile is a query on the same semantic view the agent uses, so the dashboard and the agent can't disagree."
 
 ## 3. Interactivity (45 s)
 
-Set **Region = EMEA**. All tiles re-query: net revenue $1.9M, attainment 71%, variance −$755.5K, and the trend shows the July drop clearly. Add **Segment = Enterprise** and point to the account table: account 05 has zero revenue, and accounts 01 to 04 are well under target. Clear the filters.
+Set **Region = EMEA**. All tiles re-query: net revenue $1.8M, attainment 70%, variance −$779.1K, and the trend shows the July drop clearly. Add **Segment = Enterprise** and point to the account table: account 05 has zero revenue, and accounts 01 to 04 are well under target. Clear the filters.
 
 ## 4. Publish (45 s)
 
