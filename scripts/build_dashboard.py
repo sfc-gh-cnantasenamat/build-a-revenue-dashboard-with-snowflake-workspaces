@@ -164,7 +164,7 @@ def add(tile_id, tile, position, ds=None):
 
 add("header", {"type": "text", "text": (
     "# Revenue Pulse\n**Synthetic demo data** for a fictional B2B software company, complete through "
-    f"**{CONFIG['reporting_cutoff']}**. Source: semantic view `{SV}`.\n\n"
+    f"**{CONFIG['reporting_cutoff']}**.\n\n"
     "Net revenue = gross revenue minus discounts and refunds. Attainment = net revenue / target. "
     "Year-over-year compares the same filtered months one year earlier. Default view: Q3 2026.")}, (0, 0, 12, 2))
 
@@ -421,6 +421,13 @@ for t in tiles:
 
 def options(table, column):
     return {"source": "column", "table": f"{FQ}.{table}", "column": column}
+
+
+# Footer: where every tile's numbers come from.
+add("source", {"type": "text", "text": (
+    f"Source: Database/Schema: `{FQ}` | Semantic View: `{CONFIG['semantic_view']}` | Tables: `REVENUE_MONTHLY` "
+    "(monthly revenue, targets, and recorded drivers), `CUSTOMERS` (region and segment), and `PRODUCTS`.")},
+    (0, 27, 12, 1))
 
 
 dash = {
